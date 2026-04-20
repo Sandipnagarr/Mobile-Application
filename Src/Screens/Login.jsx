@@ -156,17 +156,3 @@ const styles = StyleSheet.create({
   },
 });
 
-
-
-
-
-
-
-
-
-
-/**Designed responsive mobile UI layout using React Native
-Developed weather dashboard interface displaying key data (temperature, humidity, wind, etc.)
-Implemented SafeAreaView to handle device notch and screen boundaries
-Created scrollable card layout using ScrollView for better content handling
-Debugged and optimized UI layout issues related to flexbox and component alignment*/
