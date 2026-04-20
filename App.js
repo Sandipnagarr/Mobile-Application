@@ -1,20 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-
+import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import SplashScreen from "./Src/Screens/SplashScreen.jsx";
+import AppNavigator from "./Src/Navigation/AppNavigator";
+import { WeatherProvider } from "./Src/context/WeatherContext.js";
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  //  Splash first
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  }
+
+  // After splash → go to login/navigation
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <WeatherProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </WeatherProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

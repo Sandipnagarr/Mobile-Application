@@ -1,0 +1,38 @@
+import react from "react";
+import { API_URL } from "../config/Config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
+// Function to fetch weather data based on location
+export const fetchWeather = async (location) => {
+    try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+            console.log("No token found");
+            return;
+        }
+     
+        console.log("getting location:", location);
+        const response = await fetch(`${API_URL}/get_weather`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ q: location }),
+        });
+
+        console.log("Weather API response status:", response.status);
+        const data = await response.json();
+        if (!response.ok) {
+            console.log("Error fetching weather:", data?.msg || data?.message || "Unknown error");
+            return;
+        }
+        return data;
+    } catch (error) {
+        console.log("Error fetching weather:", error.message);
+    }
+};
+
+
+
