@@ -1,11 +1,9 @@
-import React from "react";
+
 import { View, Text, StyleSheet, ScrollView, Image,Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import {useState} from "react";
-import { useEffect } from "react";
+import { useState, useEffect, React } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import { fetchWeather } from "../api/Api";
 import { useContext } from "react";
 import { WeatherContext } from "../context/WeatherContext"; 
@@ -14,7 +12,11 @@ import { WeatherContext } from "../context/WeatherContext";
 export default function HomeScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { data, setData } = useContext(WeatherContext);
+  const { data, setData, locationName } = useContext(WeatherContext);
+  useEffect(() => {
+    console.log("UPDATED LOCATION NAME:", locationName);
+  }, [locationName]);
+
   
 useEffect(() => {
   const fetchCurrentWeather = async () => {
@@ -63,110 +65,107 @@ const rainMM = currentHourData?.precip_mm ?? 0;
   
   return (
     // <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* LOCATION */}
-        <Text style={styles.location}>
-          {user?.location_name
-            ? `${user.location_name}, ${data?.location?.region ?? ""}`
-            : "Location not found"}
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* LOCATION */}
+      <Text style={styles.location}>
+        {locationName
+          ? `${locationName}, ${data?.location?.region ?? ""}`
+          : "Location not found"}
+      </Text>
+
+      {/* WEATHER BOX */}
+      <View style={styles.box}>
+        <Text style={styles.title}>TODAY'S WEATHER</Text>
+
+        <Text style={styles.date}>
+          {data?.location?.localtime || "Time not found"}
         </Text>
 
-        {/* WEATHER BOX */}
-        <View style={styles.box}>
-          <Text style={styles.title}>TODAY'S WEATHER</Text>
+        {/* TOP */}
+        <View style={styles.topRow}>
+          <Text style={styles.percent}>{rainPercent ?? 0}%</Text>
 
-          <Text style={styles.date}>
-            {data?.location?.localtime || "Time not found"}
+          <View style={{ marginLeft: 20 }}>
+            <Text style={styles.small}>Rain Probability</Text>
+            <Text style={styles.bold}>{rainMM ?? 0} mm</Text>
+          </View>
+        </View>
+
+        {/* CONDITION + ICON */}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={{
+              uri: `https:${data?.current?.condition?.icon}`,
+            }}
+            style={{ width: 40, height: 40, marginRight: 8 }}
+          />
+
+          <Text style={styles.condition}>
+            {data?.current?.condition?.text || "Condition not available"}
           </Text>
+        </View>
 
-          {/* TOP */}
-          <View style={styles.topRow}>
-            <Text style={styles.percent}>{rainPercent ?? 0}%</Text>
+        {/* DETAILS LIST */}
+        <View style={styles.grid}>
+          {[
+            {
+              icon: "thermometer",
+              label: "Temp",
+              value: `${data?.current?.temp_c}°C`,
+            },
+            {
+              icon: "thermometer",
+              label: "Feels",
+              value: `${data?.current?.feelslike_c}°C`,
+            },
+            {
+              icon: "speedometer",
+              label: "Wind",
+              value: `${data?.current?.wind_kph} kmph`,
+            },
+            {
+              icon: "compass",
+              label: "Direction",
+              value: data?.current?.wind_dir,
+            },
+            {
+              icon: "analytics",
+              label: "Pressure",
+              value: `${data?.current?.pressure_mb} mb`,
+            },
+            {
+              icon: "eye",
+              label: "Visibility",
+              value: `${data?.current?.vis_km} km`,
+            },
+            {
+              icon: "sunny",
+              label: "UV",
+              value: data?.current?.uv,
+            },
+            {
+              icon: "water",
+              label: "Humidity",
+              value: `${data?.current?.humidity}%`,
+            },
+          ].map((item, i) => (
+            <View key={i} style={styles.card}>
+              <Ionicons name={item.icon} size={18} color="#dee5ec" />
 
-            <View style={{ marginLeft: 20 }}>
-              <Text style={styles.small}>Rain Probability</Text>
-              <Text style={styles.bold}>{rainMM ?? 0} mm</Text>
+              <Text style={styles.cardValue}>{item.value}</Text>
+              <Text style={styles.cardLabel}>{item.label}</Text>
             </View>
-          </View>
+          ))}
+        </View>
 
-          {/* CONDITION + ICON */}
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={{
-                uri: `https:${data?.current?.condition?.icon}`,
-              }}
-              style={{ width: 40, height: 40, marginRight: 8 }}
-            />
-
-            <Text style={styles.condition}>
-              {data?.current?.condition?.text || "Condition not available"}
-            </Text>
-          </View>
-
-          {/* DETAILS LIST */}
-          <View style={styles.grid}>
-            {[
-              {
-                icon: "thermometer",
-                label: "Temp",
-                value: `${data?.current?.temp_c}°C`,
-              },
-              {
-                icon: "thermometer",
-                label: "Feels",
-                value: `${data?.current?.feelslike_c}°C`,
-              },
-              {
-                icon: "speedometer",
-                label: "Wind",
-                value: `${data?.current?.wind_kph} kmph`,
-              },
-              {
-                icon: "compass",
-                label: "Direction",
-                value: data?.current?.wind_dir,
-              },
-              {
-                icon: "analytics",
-                label: "Pressure",
-                value: `${data?.current?.pressure_mb} mb`,
-              },
-              {
-                icon: "eye",
-                label: "Visibility",
-                value: `${data?.current?.vis_km} km`,
-              },
-              {
-                icon: "sunny",
-                label: "UV",
-                value: data?.current?.uv,
-              },
-              {
-                icon: "water",
-                label: "Humidity",
-                value: `${data?.current?.humidity}%`,
-              },
-            ].map((item, i) => (
-              <View key={i} style={styles.card}>
-                <Ionicons name={item.icon} size={18} color="#dee5ec" />
-
-                <Text style={styles.cardValue}>{item.value}</Text>
-                <Text style={styles.cardLabel}>{item.label}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* REFRESH BUTTON */}
-          <Pressable onPress={refreshCurrentWeather}>
-            <Text style={styles.refresh}>
-              {loading ? "Refreshing..." : "Refresh: ↻"}
-            </Text>
-          </Pressable>
+        {/* REFRESH BUTTON */}
+        <Pressable onPress={refreshCurrentWeather}>
+          <Text style={styles.refresh}>
+            {loading ? "Refreshing..." : "Refresh: ↻"}
+          </Text>
+        </Pressable>
       </View>
-      
-      
-      </ScrollView>
-  
+    </ScrollView>
   );
 }
 
@@ -183,7 +182,7 @@ const styles = StyleSheet.create({
   },
 
   location: {
-    color: "#dce1ec",
+    color: "#093188",
     fontWeight: "600",
     marginBottom: 8,
   },

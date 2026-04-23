@@ -12,7 +12,6 @@ export const fetchWeather = async (location) => {
             return;
         }
      
-        console.log("getting location:", location);
         const response = await fetch(`${API_URL}/get_weather`, {
             method: "POST",
             headers: {
@@ -22,7 +21,6 @@ export const fetchWeather = async (location) => {
             body: JSON.stringify({ q: location }),
         });
 
-        console.log("Weather API response status:", response.status);
         const data = await response.json();
         if (!response.ok) {
             console.log("Error fetching weather:", data?.msg || data?.message || "Unknown error");

@@ -7,14 +7,60 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ReportScreen from "./ReportScreen";
 import ForecastCards from "./forcastcards";
 import { WeatherContext } from "../context/WeatherContext";
+import { fetchWeather } from "../api/Api"; //  NEW
 
 export default function HomeScreen() {
-  const { data } = useContext(WeatherContext);
+  const {
+    data,
+    setData,
+    location,
+    setLocation,
+    locationName,
+    setLocationName,
+  } = useContext(WeatherContext);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
     AsyncStorage.getItem("token").then(setToken);
   }, []);
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userString = await AsyncStorage.getItem("user");
+        const parsedUser = userString ? JSON.parse(userString) : null;
+
+        const loc = parsedUser?.location;
+        const name = parsedUser?.location_name;
+
+        if (loc) {
+          setLocation(loc);
+         setLocationName(name);
+          // store in context
+        }
+      } catch (e) {
+        console.log("User load error:", e);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  //  NEW: fetch weather whenever location changes
+  useEffect(() => {
+    if (!location) return;
+
+    const getWeather = async () => {
+      try {
+        setData(null);
+        const response = await fetchWeather(location);
+        setData(response);
+      } catch (e) {
+        console.log("Weather error:", e);
+      }
+    };
+
+    getWeather();
+  }, [location]);
 
   if (!token) {
     return (
@@ -55,11 +101,7 @@ html, body { margin:0; padding:0; height:100%; }
 <body>
 <div class="dropdown-container">
   <select id="stateSelect" onchange="onStateChange()">
-    <option value="All India">All India</option>
-    <option value="TN">Tamil Nadu</option>
-    <option value="MH">Maharashtra</option>
-    <option value="DL">Delhi</option>
-    <option value="GJ">Gujarat</option>
+    <option>Loading...</option>
   </select>
 </div>
 
@@ -67,6 +109,7 @@ html, body { margin:0; padding:0; height:100%; }
 
 <script>
 const TOKEN = "${token}";
+console.log("TOKEN:", TOKEN);
 
 let map;
 let source;
@@ -95,7 +138,7 @@ let districtLayer = new ol.layer.Vector({
   source: districtSource,
   style: new ol.style.Style({
   stroke: new ol.style.Stroke({
-      color: "rgba(3, 53, 28, 0.8)", // 
+      color: "rgba(3, 53, 28, 0.8)", //
       width: 2,
     }),
     fill: new ol.style.Fill({
@@ -104,20 +147,100 @@ let districtLayer = new ol.layer.Vector({
   })
 });
 
-function loadState() {
-  console.log("Calling state API...");
+function loadCircles() {
+  fetch("https://mlinfomap.org/mlwapi/get_circle_list", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + TOKEN
+    },
+    body: JSON.stringify({ circle: "All India" })
+  })
+  .then(res => {
+console.log("Circle API Response:", JSON.stringify(res, null, 2));
 
+    return res.json();
+  })
+  .then(res => {
+
+    const circleOptions = res.data || [];
+  console.log("Circle Options:", JSON.stringify(circleOptions, null, 2));
+
+    const select = document.getElementById("stateSelect");
+    select.innerHTML = "";
+
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = "All India";
+    defaultOpt.text = "All India";
+    select.appendChild(defaultOpt);
+
+    circleOptions.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt.label;
+      option.text = opt.full_name;
+      option.setAttribute("data-coords", opt.value);
+      option.setAttribute("data-location-name", opt.location_name);
+      select.appendChild(option);
+    });
+
+    loadBoundary();
+    loadDistrict();
+  })
+  .catch(err => console.log("Circle API ERROR", err));
+}
+
+//  DROPDOWN CHANGE
+function onStateChange() {
+  const select = document.getElementById("stateSelect");
+  const selected = select.value;
+
+  const coords = select.options[select.selectedIndex].getAttribute("data-coords");
+  const name=select.options[select.selectedIndex].getAttribute("data-location-name");
+ window.ReactNativeWebView.postMessage(
+   JSON.stringify({
+     type: "LOCATION_CHANGE",
+     coords: coords,
+     name:name
+   }),
+ );
+
+  console.log("Selected:", selected, coords);
+
+  // clear layers
+  indiaSource.clear();
+  stateSource.clear();
+  districtSource.clear();
+
+  if (selected === "All India") {
+    loadBoundary();
+    loadDistrict();
+  } else {
+    loadState(selected);
+
+    //  zoom to location (NEW)
+    if (coords) {
+      const [lon, lat] = coords.split(",").map(Number);
+      map.getView().animate({
+        center: ol.proj.fromLonLat([lon, lat]),
+        zoom: 6,
+        duration: 800
+      });
+    }
+  }
+}
+
+//  FIXED STATE FUNCTION
+function loadState(circle) {
   fetch("https://mlinfomap.org/mlwapi/get_state_boundary", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + TOKEN
     },
-    body: JSON.stringify({ circle: "TN" }),
+    body: JSON.stringify({ circle: circle })
   })
   .then(res => res.json())
   .then(res => {
-    console.log("State API Response:", res);
 
     if (res.msg) {
       console.log("API ERROR:", res.msg);
@@ -131,7 +254,6 @@ function loadState() {
       featureProjection: "EPSG:3857"
     });
 
-    stateSource.clear();
     stateSource.addFeatures(features);
 
     map.getView().fit(stateSource.getExtent(), {
@@ -142,12 +264,8 @@ function loadState() {
   .catch(err => {
     console.log("State API ERROR ❌", err);
   });
-} 
+}
 function loadBoundary() {
-  console.log("Calling boundary API...");
-
-  if (!boundaryLoaded) {
-
     fetch("https://mlinfomap.org/mlwapi/get_india_boundary", {
       method: "POST",
       headers: {
@@ -158,7 +276,6 @@ function loadBoundary() {
     })
     .then(res => res.json())
     .then(res => {
-      console.log("API Response:", res);
 
       if (res.msg) {
         console.log("API ERROR:", res.msg);
@@ -187,10 +304,8 @@ function loadBoundary() {
     });
 
   }
-}
 
 function loadDistrict() {
-  console.log("Calling district API...");
 
   fetch("https://mlinfomap.org/mlwapi/get_district_boundary", {
     method: "POST",
@@ -202,7 +317,6 @@ function loadDistrict() {
   })
   .then(res => res.json())
   .then(res => {
-    console.log("District API Response:", res);
 
     if (res.msg) {
       console.log("API ERROR:", res.msg);
@@ -254,9 +368,7 @@ window.onload = function () {
     })
   });
 
-  loadBoundary(); // ✅ FIXED
-  loadDistrict(); // ✅ FIXED
-  loadState(); // ✅ FIXED
+  loadCircles(); //  ONLY THIS (IMPORTANT)
 };
 
 </script>
@@ -268,7 +380,6 @@ window.onload = function () {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
-
         <ReportScreen />
 
         <WebView
@@ -276,12 +387,68 @@ window.onload = function () {
           source={{ html }}
           javaScriptEnabled
           domStorageEnabled
+          onMessage={(event) => {
+            try {
+              const msg = JSON.parse(event.nativeEvent.data);
+
+              //  IMPORTANT FIX
+              if (msg.type === "LOCATION_CHANGE") {
+                console.log("NEW LOCATION:", msg.coords);
+
+                setLocation(msg.coords);
+                setLocationName(msg.name); //  THIS WAS MISSING
+              }
+            } catch (e) {
+              console.log("WEBVIEW:", event.nativeEvent.data);
+            }
+          }}
+          injectedJavaScript={`
+    (function() {
+      const oldLog = console.log;
+      console.log = function(...args) {
+        window.ReactNativeWebView.postMessage(args.join(" "));
+        oldLog.apply(console, args);
+      };
+    })();
+    true;
+  `}
           style={{ height: 600 }}
         />
 
         <ForecastCards />
-
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+
+
+// this is for console logs from webview we can not use onsole directly in webview
+
+// injectedJavaScript={`
+// (function() {
+//   const oldLog = console.log;
+//   console.log = function(...args) {
+//     window.ReactNativeWebView.postMessage(args.join(" "));
+//     oldLog.apply(console, args);
+//   };
+// })();
+// true;
+// `}
+/*
+Implemented dropdown for circle/state selection using API (get_circle_list).
+Fixed API integration issues (500 error, request body handling, token usage).
+Parsed and rendered GeoJSON boundary data using OpenLayers inside WebView.
+Implemented dynamic map updates on state/circle selection.
+Added zoom functionality based on selected circle coordinates (lat, long).
+Created global state management using Context API for location and weather data.
+Synced dropdown selection with global location state (setLocation).
+Integrated weather API and updated weather data dynamically based on selected location.
+Ensured forecast and report components re-render on location change with updated weather data.
+Added support for dynamic location name (locationName) in context.
+Synced UI location display with selected circle instead of static login location.
+Debugged and resolved issues related to undefined context values .
+Implemented proper async handling using useEffect for user data and weather updates.
+Handled initial render issues and ensured proper state update flow.
+.
+*/
