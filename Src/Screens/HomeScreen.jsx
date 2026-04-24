@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState,useRef } from "react";
 import { ScrollView, ActivityIndicator, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +8,9 @@ import ReportScreen from "./ReportScreen";
 import ForecastCards from "./forcastcards";
 import { WeatherContext } from "../context/WeatherContext";
 import { fetchWeather } from "../api/Api"; //  NEW
+import SearchBar from "../component/searchbar.jsx";
+import IDW from "../component/IDW.jsx";
+
 
 export default function HomeScreen() {
   const {
@@ -19,6 +22,7 @@ export default function HomeScreen() {
     setLocationName,
   } = useContext(WeatherContext);
   const [token, setToken] = useState(null);
+  const webViewRef = useRef(null);
 
   useEffect(() => {
     AsyncStorage.getItem("token").then(setToken);
@@ -44,6 +48,8 @@ export default function HomeScreen() {
 
     loadUser();
   }, []);
+
+  
 
   //  NEW: fetch weather whenever location changes
   useEffect(() => {
@@ -371,6 +377,57 @@ window.onload = function () {
   loadCircles(); //  ONLY THIS (IMPORTANT)
 };
 
+// added for search functionality (NEW) 
+
+function handleSearchMessage(event) {
+  try {
+    const msg = JSON.parse(event.data);
+
+    console.log("MESSAGE RECEIVED:", msg); // 🔥 debug
+
+    if (msg.type === "SEARCH_LOCATION") {
+
+      const lon = parseFloat(msg.lon);
+      const lat = parseFloat(msg.lat);
+
+      const coords = ol.proj.fromLonLat([lon, lat]);
+
+      const view = map.getView();
+
+      //  move map
+      view.setCenter(coords);
+      view.setZoom(13);
+
+      //  remove old marker
+      source.clear();
+
+      //  create marker
+      const marker = new ol.Feature({
+        geometry: new ol.geom.Point(coords)
+      });
+
+      marker.setStyle(
+        new ol.style.Style({
+       image: new ol.style.Icon({
+  src: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  scale: 0.05,
+  anchor: [0.5, 1],
+})
+        })
+      );
+
+      source.addFeature(marker);
+    }
+
+  } catch (e) {
+    console.log("Search message error:", e);
+  }
+}
+
+//  VERY IMPORTANT (add BOTH)
+window.addEventListener("message", handleSearchMessage);
+document.addEventListener("message", handleSearchMessage);
+
 </script>
 
 </body>
@@ -381,8 +438,10 @@ window.onload = function () {
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
         <ReportScreen />
-
+        <SearchBar webViewRef={webViewRef} />
+        <IDW />
         <WebView
+          ref={webViewRef}
           originWhitelist={["*"]}
           source={{ html }}
           javaScriptEnabled
@@ -414,7 +473,6 @@ window.onload = function () {
   `}
           style={{ height: 600 }}
         />
-
         <ForecastCards />
       </ScrollView>
     </SafeAreaView>
@@ -436,19 +494,10 @@ window.onload = function () {
 // true;
 // `}
 /*
-Implemented dropdown for circle/state selection using API (get_circle_list).
-Fixed API integration issues (500 error, request body handling, token usage).
-Parsed and rendered GeoJSON boundary data using OpenLayers inside WebView.
-Implemented dynamic map updates on state/circle selection.
-Added zoom functionality based on selected circle coordinates (lat, long).
-Created global state management using Context API for location and weather data.
-Synced dropdown selection with global location state (setLocation).
-Integrated weather API and updated weather data dynamically based on selected location.
-Ensured forecast and report components re-render on location change with updated weather data.
-Added support for dynamic location name (locationName) in context.
-Synced UI location display with selected circle instead of static login location.
-Debugged and resolved issues related to undefined context values .
-Implemented proper async handling using useEffect for user data and weather updates.
-Handled initial render issues and ensured proper state update flow.
-.
+Implemented location search using OpenStreetMap API and integrated with Context API 60
+Connected search results to weather API for dynamic weather data updation 70
+Integrated WebView communication to sync search with map (center, zoom, marker)
+created new idw component and Developed KPI buttons (Rainfall, Wind, Humidity, Visibility, Temperature) 
+system cleanup and optimizations by rizwan sir (removed unwanted files and applications after verification) 90
+installed emulator and setup virtual device (it was deletd due to system failure) 60
 */
