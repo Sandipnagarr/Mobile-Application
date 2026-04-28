@@ -21,7 +21,7 @@ const SplashIntro = ({ onFinish }) => {
   return (
     <View style={styles.container}>
       <Animated.Image
-        source={require("../../assets/IndusTower.png")}
+        source={require("../../assets/MLLogo.png")}
         style={[styles.logo, { transform: [{ scale }] }]}
         resizeMode="contain"
       />
@@ -32,7 +32,7 @@ const SplashIntro = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#05680d",
+    backgroundColor: "#3a96d3",
     alignItems: "center",
     justifyContent: "center",
   },

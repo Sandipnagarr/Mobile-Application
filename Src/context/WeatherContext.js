@@ -6,6 +6,7 @@ export const WeatherProvider = ({ children }) => {
   const [data, setData] = useState(null);
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState(null); // 
+  const [theme, setTheme] = useState(null); // New state for theme
 
   return (
     <WeatherContext.Provider
@@ -16,6 +17,8 @@ export const WeatherProvider = ({ children }) => {
         setLocation,
         locationName, //
         setLocationName,
+        theme,
+        setTheme,
       }}
     >
       {children}

@@ -1,11 +1,14 @@
 import React, { useState, useContext } from "react";
 import { View, TextInput, Button, StyleSheet,Pressable } from "react-native";
 import { WeatherContext } from "../context/WeatherContext";
+import { defaultTheme } from "../theme";
 
 export default function SearchBar({ webViewRef }) {
   const [query, setQuery] = useState("");
 
-  const { setLocation, setLocationName } = useContext(WeatherContext);
+  const { setLocation, setLocationName, theme } = useContext(WeatherContext);
+  const safeTheme = theme || defaultTheme;
+  const styles = createStyles(safeTheme);
 
 const handleSearch = async () => {
   if (!query) return;
@@ -67,30 +70,31 @@ const handleSearch = async () => {
       <Button
         style={styles.Button}
         title="Search"
-        color="#198b49"
+        color={theme?.primary_button_bg || defaultTheme.primary_button_bg}
         onPress={handleSearch}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    padding: 8,
-    marginRight: 8,
-  },
-  Button: {
-    backgroundColor: "#198b49",
-    color: "white",
-  },
-});
+const createStyles = (theme) =>
+  StyleSheet.create({
+    searchContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+      paddingHorizontal: 10,
+    },
+    input: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 6,
+      padding: 8,
+      marginRight: 8,
+    },
+    Button: {
+      backgroundColor: theme.primary_button_bg,
+      color: "white",
+    },
+  });

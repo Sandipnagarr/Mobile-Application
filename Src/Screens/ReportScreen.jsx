@@ -7,12 +7,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchWeather } from "../api/Api";
 import { useContext } from "react";
 import { WeatherContext } from "../context/WeatherContext"; 
-
+import { defaultTheme } from "../theme"
 
 export default function HomeScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { data, setData, locationName } = useContext(WeatherContext);
+  const { data, setData, locationName, theme } = useContext(WeatherContext);
+    const safeTheme = theme || defaultTheme;
+    const styles = createStyles(safeTheme);
+
   useEffect(() => {
     console.log("UPDATED LOCATION NAME:", locationName);
   }, [locationName]);
@@ -169,128 +172,130 @@ const rainMM = currentHourData?.precip_mm ?? 0;
   );
 }
 
-const styles = StyleSheet.create({
-  /*  SAFE AREA ROOT */
-  safe: {
-    flex: 1,
-    backgroundColor: "#e5e7eb",
-  },
 
-  /* CONTENT */
-  container: {
-    padding: 10,
-  },
+const createStyles = (theme) =>
+  StyleSheet.create({
+    /*  SAFE AREA ROOT */
+    safe: {
+      flex: 1,
+      backgroundColor: "#e5e7eb",
+    },
 
-  location: {
-    color: "#093188",
-    fontWeight: "600",
-    marginBottom: 8,
-  },
+    /* CONTENT */
+    container: {
+      padding: 10,
+    },
 
-  box: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#cdd4dd",
-    borderRadius: 10,
-    padding: 14,
-  },
+    location: {
+      color: "#093188",
+      fontWeight: "600",
+      marginBottom: 8,
+    },
 
-  title: {
-    fontWeight: "700",
-    color: "#374151",
-  },
+    box: {
+      backgroundColor: "#fff",
+      borderWidth: 1,
+      borderColor: "#cdd4dd",
+      borderRadius: 10,
+      padding: 14,
+    },
 
-  date: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 10,
-  },
+    title: {
+      fontWeight: "700",
+      color: "#374151",
+    },
 
-  topRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
+    date: {
+      fontSize: 12,
+      color: "#6b7280",
+      marginBottom: 10,
+    },
 
-  percent: {
-    fontSize: 28,
-    fontWeight: "700",
-  },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
 
-  small: {
-    fontSize: 12,
-    color: "#6b7280",
-  },
+    percent: {
+      fontSize: 28,
+      fontWeight: "700",
+    },
 
-  bold: {
-    fontWeight: "600",
-  },
+    small: {
+      fontSize: 12,
+      color: "#6b7280",
+    },
 
-  condition: {
-    marginBottom: 10,
-    color: "#374151",
-  },
+    bold: {
+      fontWeight: "600",
+    },
 
-  list: {
-    marginTop: 5,
-  },
+    condition: {
+      marginBottom: 10,
+      color: "#374151",
+    },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
+    list: {
+      marginTop: 5,
+    },
 
-  iconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#e9e5da",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
 
-  label: {
-    flex: 1,
-    color: "#eef1f7",
-  },
+    iconCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: "#e9e5da",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10,
+    },
 
-  value: {
-    fontWeight: "600",
-    color: "#e2e3e6",
-  },
+    label: {
+      flex: 1,
+      color: "#eef1f7",
+    },
 
-  refresh: {
-    marginTop: 10,
-    fontSize: 12,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
+    value: {
+      fontWeight: "600",
+      color: "#e2e3e6",
+    },
 
-  card: {
-    width: "45%",
-    backgroundColor: "#198b49",
-    borderRadius: 12,
-    padding: 5,
-    marginBottom: 10,
-    alignItems: "center",
-  },
+    refresh: {
+      marginTop: 10,
+      fontSize: 12,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      marginTop: 10,
+    },
 
-  cardValue: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 5,
-  },
+    card: {
+      width: "45%",
+      backgroundColor: theme.primary_icon_color,
+      borderRadius: 12,
+      padding: 5,
+      marginBottom: 10,
+      alignItems: "center",
+    },
 
-  cardLabel: {
-    color: "white",
-    fontSize: 14,
-    marginTop: 2,
-  },
-});
+    cardValue: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "bold",
+      marginTop: 5,
+    },
+
+    cardLabel: {
+      color: "white",
+      fontSize: 14,
+      marginTop: 2,
+    },
+  });
