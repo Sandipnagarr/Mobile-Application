@@ -22,6 +22,7 @@ export const fetchWeather = async (location) => {
         });
 
         const data = await response.json();
+        // console.log("get weather",data)
         if (!response.ok) {
             console.log("Error fetching weather:", data?.msg || data?.message || "Unknown error");
             return;

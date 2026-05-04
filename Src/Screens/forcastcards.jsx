@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { WeatherContext } from "../context/WeatherContext";
 import { defaultTheme } from "../theme"
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function ForecastCards() {
   const { data, theme } = useContext(WeatherContext);
-
   // const styles = createStyles(theme);
     const safeTheme = theme || defaultTheme;
     const styles = createStyles(safeTheme);
@@ -24,26 +24,39 @@ export default function ForecastCards() {
   const [activeHazard, setActiveHazard] = useState("Rainfall");
   const [isToggleOn, setIsToggleOn] = useState(false);
 
-  if (!data) {
-    return <Text>Loading forecast...</Text>;
-  }
+if (!data) {
+  return <Text>Loading forecast...</Text>;
+}
 
-  const dayForecastList = data?.forecast?.forecastday?.map((day) => ({
-    date: day.date,
-    temp_min: day.day.mintemp_c,
-    temp_max: day.day.maxtemp_c,
-    icon: `https:${day.day.condition.icon}`,
-    condition_text: day.day.condition.text,
-    chance_of_rain: day.day.daily_chance_of_rain,
-    humidity: day.day.avghumidity,
-  }));
+// ---------- SIMPLE STRUCTURE ----------
+const forecastDays = data?.forecast?.forecastday || [];
 
-  const currentHour = new Date().getHours();
+// DAILY
+const dayForecastList = forecastDays.map((day) => ({
+  date: day.date,
+  temp_min: day.day.mintemp_c,
+  temp_max: day.day.maxtemp_c,
+  icon: `https:${day.day.condition.icon}`,
+  condition_text: day.day.condition.text,
+  chance_of_rain: day.day.daily_chance_of_rain,
+  humidity: day.day.avghumidity,
+  rain_mm: day.day.totalprecip_mm || day.day.precip_mm || 0,
+}));
 
-  const getHourFromTime = (time) => {
-    return Number(time.split(" ")[1].split(":")[0]);
-  };
+// HOURLY (today only)
+const hourlyData = (forecastDays[0]?.hour || []).map((hour) => ({
+  time: hour.time.split(" ")[1],
+  temp: hour.temp_c,
+  icon: `https:${hour.condition.icon}`,
+  chance_of_rain: hour.chance_of_rain,
+  rain_mm: hour.precip_mm || 0, //  
+  wind: hour.wind_kph,
+}));
 
+// CURRENT HOUR
+const currentHour = new Date().getHours();
+
+// HELPER
   return (
     <View style={styles.section}>
       {/* HOURLY TAB */}
@@ -64,8 +77,8 @@ export default function ForecastCards() {
 
       {showHourly && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {data?.forecast?.forecastday?.[0]?.hour?.map((hour, i) => {
-            const hourValue = getHourFromTime(hour?.time);
+          {hourlyData.map((hour, i) => {
+            const hourValue = Number(hour.time.split(":")[0]);
             const isCurrent = hourValue === currentHour;
 
             return (
@@ -73,15 +86,26 @@ export default function ForecastCards() {
                 key={i}
                 style={[styles.hourCard, isCurrent && styles.activeHourCard]}
               >
-                <Text style={styles.hourTime}>{hour?.time?.split(" ")[1]}</Text>
+                {/* TIME */}
+                <Text style={styles.hourTime}>{hour.time}</Text>
 
-                <Image
-                  source={{ uri: `https:${hour?.condition?.icon}` }}
-                  style={styles.hourIcon}
-                />
+                {/* ICON */}
+                <Image source={{ uri: hour.icon }} style={styles.hourIcon} />
 
-                <Text style={styles.hourTemp}>{hour?.temp_c}°C</Text>
-                <Text style={styles.hourRain}>🌧 {hour?.chance_of_rain}%</Text>
+                {/* TEMP */}
+                <Text style={styles.hourTemp}>{hour.temp}°C</Text>
+
+                {/* RAIN % */}
+                <Text style={styles.hourRain}>🌧 {hour.chance_of_rain}% Rain probility</Text>
+
+                {/* RAIN MM (FIXED) */}
+                <Text style={styles.hour_mm}>🌧 {hour.rain_mm} mm</Text>
+
+                {/* WIND (NEW like Angular) */}
+                <Text style={styles.hour_mm}>
+               <FontAwesome5 name="wind" size={14} color={safeTheme.secondary_text_color}/>
+                  {hour.wind} km/h
+                </Text>
               </View>
             );
           })}
@@ -184,7 +208,7 @@ export default function ForecastCards() {
             )}
           </View>
 
-          {/* 🔹 Severity Dropdown */}
+          {/*  Severity Dropdown */}
           <Text style={styles.label}>Severity</Text>
           <View style={styles.dropdown}>
             <Text style={{ color: safeTheme.secondary_text_color }}>
@@ -192,7 +216,7 @@ export default function ForecastCards() {
             </Text>
           </View>
 
-          {/* 🔹 Toggle */}
+          {/*  Toggle */}
           <View style={styles.toggleRow}>
             <Text style={styles.label}>View on Map</Text>
             <Pressable
@@ -211,7 +235,7 @@ export default function ForecastCards() {
             </Pressable>
           </View>
 
-          {/* 🔹 TABLE HEADER */}
+          {/* TABLE HEADER */}
           <View style={styles.tableHeader}>
             <Text style={styles.th}>S.No</Text>
             <Text style={styles.th}>District</Text>
@@ -220,7 +244,7 @@ export default function ForecastCards() {
             <Text style={styles.th}>Severity</Text>
           </View>
 
-          {/* 🔹 TABLE ROW (Sample) */}
+          {/*  TABLE ROW (Sample) */}
           <View style={styles.tableRow}>
             <Text style={styles.td}>1</Text>
             <Text style={styles.td}>Delhi</Text>
@@ -229,7 +253,7 @@ export default function ForecastCards() {
             <Text style={styles.td}>High</Text>
           </View>
 
-          {/* 🔹 No Data */}
+          {/*  No Data */}
           <Text style={styles.noData}>No data found for selected filters.</Text>
         </View>
       )}
@@ -244,15 +268,13 @@ const createStyles = (theme) =>
     },
 
     hourCard: {
-      width: 90,
+      width: 140,
       padding: 10,
-      borderRadius: 10,
-      marginRight: 10,
+      borderRadius: 0,
+      margin: 10,
       alignItems: "center",
       backgroundColor: theme.min_other_color,
-      borderColor:"red",
-    
-      borderWidth: 1,
+      textcolor: theme.secondary_text_color,
     },
 
     hourTime: {
@@ -267,7 +289,7 @@ const createStyles = (theme) =>
 
     hourTemp: {
       fontWeight: "bold",
-      color: theme.text_on_dark_bg,
+      color: theme.secondary_text_color,
     },
 
     hourRain: {
@@ -282,8 +304,7 @@ const createStyles = (theme) =>
       paddingVertical: 12,
       paddingHorizontal: 15,
       backgroundColor: theme.primary_button_bg,
-      borderRadius: 10,
-      marginBottom: 8,
+      marginBottom: 1,
     },
 
     activeAccordionTab: {
@@ -308,21 +329,24 @@ const createStyles = (theme) =>
     activeHourCard: {
       backgroundColor: theme.hover_card_bg,
       borderColor: theme.primary_border_color,
-      borderWidth: 2,
+      borderWidth: 1,
+      color: "red",
     },
 
     dayCard: {
-      width: 140,
+      width: 160,
       padding: 12,
-      borderRadius: 12,
-      marginRight: 10,
+      borderRadius: 0,
+      margin: 10,
       backgroundColor: theme.hover_card_bg,
+      borderColor: theme.primary_border_color,
       borderWidth: 1,
     },
 
     date: {
       fontWeight: "600",
       marginBottom: 6,
+      textAlign: "center",
       color: theme.secondary_text_color,
     },
 
@@ -385,90 +409,93 @@ const createStyles = (theme) =>
       color: theme.secondary_text_color,
     },
     label: {
-  marginBottom: 5,
-  color: theme.secondary_text_color,
-  fontWeight: "600",
-},
+      marginBottom: 5,
+      color: theme.secondary_text_color,
+      fontWeight: "600",
+    },
 
-hazardTabs: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 8,
-  marginBottom: 10,
-},
+    hazardTabs: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 10,
+    },
 
-hazardButton: {
-  backgroundColor: theme.primary_button_bg,
-  paddingVertical: 6,
-  paddingHorizontal: 10,
-  borderRadius: 20,
-},
+    hazardButton: {
+      backgroundColor: theme.primary_button_bg,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 20,
+    },
 
-activeHazardButton: {
-  backgroundColor: theme.accordion_active_bg,
-},
+    activeHazardButton: {
+      backgroundColor: theme.accordion_active_bg,
+    },
 
-dropdown: {
-  borderWidth: 1,
-  borderColor: theme.primary_border_color,
-  padding: 10,
-  borderRadius: 6,
-  marginBottom: 10,
-},
+    dropdown: {
+      borderWidth: 1,
+      borderColor: theme.primary_border_color,
+      padding: 10,
+      borderRadius: 6,
+      marginBottom: 10,
+    },
 
-toggleRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 10,
-},
+    toggleRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+    },
 
-toggle: {
-  width: 50,
-  height: 25,
-  borderRadius: 20,
-  backgroundColor: "#ccc",
-  justifyContent: "center",
-  padding: 3,
-},
+    toggle: {
+      width: 50,
+      height: 25,
+      borderRadius: 20,
+      backgroundColor: "#ccc",
+      justifyContent: "center",
+      padding: 3,
+    },
 
-toggleCircle: {
-  width: 18,
-  height: 18,
-  borderRadius: 50,
-  backgroundColor: "#fff",
-},
+    toggleCircle: {
+      width: 18,
+      height: 18,
+      borderRadius: 50,
+      backgroundColor: "#fff",
+    },
 
-tableHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  borderBottomWidth: 1,
-  borderColor: theme.primary_border_color,
-  paddingBottom: 5,
-},
+    tableHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      borderBottomWidth: 1,
+      borderColor: theme.primary_border_color,
+      paddingBottom: 5,
+    },
 
-tableRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  paddingVertical: 8,
-},
+    tableRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: 8,
+    },
 
-th: {
-  flex: 1,
-  fontWeight: "bold",
-  fontSize: 12,
-  color: theme.secondary_text_color,
-},
+    th: {
+      flex: 1,
+      fontWeight: "bold",
+      fontSize: 12,
+      color: theme.secondary_text_color,
+    },
 
-td: {
-  flex: 1,
-  fontSize: 12,
-  color: theme.secondary_text_color,
-},
-
-noData: {
-  textAlign: "center",
-  marginTop: 10,
-  color: theme.secondary_text_color,
-},
+    td: {
+      flex: 1,
+      fontSize: 12,
+      color: theme.secondary_text_color,
+    },
+    hour_mm: {
+      color: theme.secondary_text_color,
+      fontSize: 12,
+    },
+    noData: {
+      textAlign: "center",
+      marginTop: 10,
+      color: theme.secondary_text_color,
+    },
   });

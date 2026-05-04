@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/MLLogo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/MLLogo.png",
       "backgroundColor": "#ffffff"

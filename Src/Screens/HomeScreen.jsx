@@ -1,930 +1,9 @@
-// import React, { useContext, useEffect, useState, useRef } from "react";
-// import { ScrollView, ActivityIndicator, View } from "react-native";
-// import { WebView } from "react-native-webview";
-// import { SafeAreaView } from "react-native-safe-area-context";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// import ReportScreen from "./ReportScreen";
-// import ForecastCards from "./forcastcards";
-// import { WeatherContext } from "../context/WeatherContext";
-// import { fetchWeather } from "../api/Api"; //  NEW
-// import SearchBar from "../component/searchbar.jsx";
-// import IDW from "../component/IDW.jsx";
-
-// export default function HomeScreen() {
-//   const {
-//     data,
-//     setData,
-//     location,
-//     setLocation,
-//     locationName,
-//     setLocationName,
-//   } = useContext(WeatherContext);
-//   const [token, setToken] = useState(null);
-//   const webViewRef = useRef(null);
-
-//   useEffect(() => {
-//     AsyncStorage.getItem("token").then(setToken);
-//   }, []);
-//   useEffect(() => {
-//     const loadUser = async () => {
-//       try {
-//         const userString = await AsyncStorage.getItem("user");
-//         const parsedUser = userString ? JSON.parse(userString) : null;
-
-//         const loc = parsedUser?.location;
-//         const name = parsedUser?.location_name;
-
-//         if (loc) {
-//           setLocation(loc);
-//           setLocationName(name);
-//           // store in context
-//         }
-//       } catch (e) {
-//         console.log("User load error:", e);
-//       }
-//     };
-
-//     loadUser();
-//   }, []);
-
-//   // async function fetchRainfallData() {
-//   //   try {
-//   //     const response = await fetch(
-//   //       "https://mlinfomap.org/mlwapi/get-current-weather",
-//   //       {
-//   //         method: "POST",
-//   //         headers: {
-//   //           "Content-Type": "application/json",
-//   //           Authorization: "Bearer " + TOKEN,
-//   //         },
-//   //         body: JSON.stringify({
-//   //           params: {
-//   //             selectedDate: new Date().toISOString(), // you can change later
-//   //           },
-//   //         }),
-//   //       },
-//   //     );
-
-//   //     const result = await response.json();
-
-//   //     if (!result?.status || !Array.isArray(result.data)) {
-//   //       console.log("❌ Invalid API response", result);
-//   //       return [];
-//   //     }
-
-//   //     // 🔥 Convert to IDW usable format
-//   //     return result.data.map((item) => ({
-//   //       lon: parseFloat(item.lon || item.longitude),
-//   //       lat: parseFloat(item.lat || item.latitude),
-//   //       value: parseFloat(item.precip || item.rain || item.rainfall || 0),
-//   //     }));
-//   //   } catch (error) {
-//   //     console.log("❌ IDW API error:", error);
-//   //     return [];
-//   //   }
-//   // }
-
-//   // useEffect(() => {
-//   //   fetchRainfallData();
-//   // }, []);
-//   //  NEW: fetch weather whenever location changes
-//   useEffect(() => {
-//     if (!location) return;
-
-//     const getWeather = async () => {
-//       try {
-//         setData(null);
-//         const response = await fetchWeather(location);
-//         setData(response);
-//       } catch (e) {
-//         console.log("Weather error:", e);
-//       }
-//     };
-
-//     getWeather();
-//   }, [location]);
-
-//   if (!token) {
-//     return (
-//       <View style={{ flex: 1, justifyContent: "center" }}>
-//         <ActivityIndicator size="large" />
-//       </View>
-//     );
-//   }
-
-// //   const html = `
-// // <!DOCTYPE html>
-// // <html>
-// // <head>
-// // <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-// // <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@7.5.2/ol.css">
-// // <script src="https://cdn.jsdelivr.net/npm/ol@7.5.2/dist/ol.js"></script>
-
-// // <!-----------------------------------------ol-ext----------------->
-// // <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-ext/dist/ol-ext.min.css">
-// // <script src="https://cdn.jsdelivr.net/npm/ol-ext/dist/ol-ext.min.js"></script>
-
-// // // <script>
-// // // setTimeout(() => {
-// // //   console.log("OL:", typeof ol);
-// // //   console.log("OL-EXT:", typeof ol.ext);
-
-// // //   if (typeof ol !== "undefined" && ol.ext) {
-
-// // //   } else {
-
-// // //   }
-// // // }, 1000);
-// // // </script>
-// // <style>
-// // html, body { margin:0; padding:0; height:100%; }
-// // #map { width:100%; height:100%; }
-
-// // .dropdown-container {
-// //   position: absolute;
-// //   top: 10px;
-// //   right: 10px;
-// //   z-index: 999;
-// // }
-
-// // .dropdown-container select {
-// //   padding: 8px;
-// //   border-radius: 8px;
-// //   background: white;
-// // }
-// // </style>
-// // </head>
-
-// // <body>
-// // <div class="dropdown-container">
-// //   <select id="stateSelect" onchange="onStateChange()">
-// //     <option>Loading...</option>
-// //   </select>
-// // </div>
-
-// // <div id="map"></div>
-
-// // <script>
-// // const TOKEN = "${token}";
-// // console.log("TOKEN:", TOKEN);
-
-// // let map;
-// // let source;
-// // let indiaSource = new ol.source.Vector();
-// // let stateSource = new ol.source.Vector();
-//   // let districtSource = new ol.source.Vector();
-
-// // let boundaryLoaded = false;
-
-// // let indiaLayer = new ol.layer.Vector({
-// //   source: indiaSource,
-// // });
-
-// // let stateLayer = new ol.layer.Vector({
-// //   source: stateSource,
-// //   style: new ol.style.Style({
-// //     stroke: new ol.style.Stroke({
-// //       color: "rgba(0, 0, 255, 0.8)", // Blue with opacity
-// //       width: 2,
-// //     }),
-// //     fill: new ol.style.Fill({
-// //       color: "rgba(0, 0, 255, 0.1)" // Transparent blue fill
-// //     })
-// //   })
-// // });
-// // let districtLayer = new ol.layer.Vector({
-// //   source: districtSource,
-// //   style: new ol.style.Style({
-// //   stroke: new ol.style.Stroke({
-// //       color: "rgba(3, 53, 28, 0.8)", //
-// //       width: 2,
-// //     }),
-// //     fill: new ol.style.Fill({
-// //       color: "rgba(255, 0, 0, 0.2)" //  transparent fill
-// //     })
-// //   })
-// // });
-
-// // function loadCircles() {
-// //   fetch("https://mlinfomap.org/mlwapi/get_circle_list", {
-// //     method: "POST",
-// //     headers: {
-// //       "Content-Type": "application/json",
-// //       "Authorization": "Bearer " + TOKEN
-// //     },
-// //     body: JSON.stringify({ circle: "All India" })
-// //   })
-// //   .then(res => {
-
-// //     return res.json();
-// //   })
-// //   .then(res => {
-
-// //     const circleOptions = res.data || [];
-
-// //     const select = document.getElementById("stateSelect");
-// //     select.innerHTML = "";
-
-// //     const defaultOpt = document.createElement("option");
-// //     defaultOpt.value = "All India";
-// //     defaultOpt.text = "All India";
-// //     select.appendChild(defaultOpt);
-
-// //     circleOptions.forEach(opt => {
-// //       const option = document.createElement("option");
-// //       option.value = opt.label;
-// //       option.text = opt.full_name;
-// //       option.setAttribute("data-coords", opt.value);
-// //       option.setAttribute("data-location-name", opt.location_name);
-// //       select.appendChild(option);
-// //     });
-
-// //     loadBoundary();
-// //     loadDistrict();
-// //   })
-// //   .catch(err => console.log("Circle API ERROR", err));
-// // }
-
-// // //  DROPDOWN CHANGE
-// // function onStateChange() {
-// //   const select = document.getElementById("stateSelect");
-// //   const selected = select.value;
-
-// //   const coords = select.options[select.selectedIndex].getAttribute("data-coords");
-// //   const name=select.options[select.selectedIndex].getAttribute("data-location-name");
-// //  window.ReactNativeWebView.postMessage(
-// //    JSON.stringify({
-// //      type: "LOCATION_CHANGE",
-// //      coords: coords,
-// //      name:name
-// //    }),
-// //  );
-
-// //   // clear layers
-// //   indiaSource.clear();
-// //   stateSource.clear();
-// //   districtSource.clear();
-
-// //   if (selected === "All India") {
-// //     loadBoundary();
-// //     loadDistrict();
-// //   } else {
-// //     loadState(selected);
-
-// //     //  zoom to location (NEW)
-// //     if (coords) {
-// //       const [lon, lat] = coords.split(",").map(Number);
-// //       map.getView().animate({
-// //         center: ol.proj.fromLonLat([lon, lat]),
-// //         zoom: 6,
-// //         duration: 800
-// //       });
-// //     }
-// //   }
-// // }
-
-// // //  FIXED STATE FUNCTION
-// // function loadState(circle) {
-// //   fetch("https://mlinfomap.org/mlwapi/get_state_boundary", {
-// //     method: "POST",
-// //     headers: {
-// //       "Content-Type": "application/json",
-// //       "Authorization": "Bearer " + TOKEN
-// //     },
-// //     body: JSON.stringify({ circle: circle })
-// //   })
-// //   .then(res => res.json())
-// //   .then(res => {
-
-// //     if (res.msg) {
-// //       console.log("API ERROR:", res.msg);
-// //       return;
-// //     }
-
-// //     const data = res.data || res;
-
-// //     const features = new ol.format.GeoJSON().readFeatures(data, {
-// //       dataProjection: "EPSG:4326",
-// //       featureProjection: "EPSG:3857"
-// //     });
-
-// //     stateSource.addFeatures(features);
-
-// //     map.getView().fit(stateSource.getExtent(), {
-// //       duration: 800,
-// //       padding: [20,20,20,20]
-// //     });
-// //   })
-// //   .catch(err => {
-// //     console.log("State API ERROR ❌", err);
-// //   });
-// // }
-// // function loadBoundary() {
-// //     fetch("https://mlinfomap.org/mlwapi/get_india_boundary", {
-// //       method: "POST",
-// //       headers: {
-// //         "Content-Type": "application/json",
-// //         "Authorization": "Bearer " + TOKEN
-// //       },
-// //       body: JSON.stringify({ circle: "All India" }),
-// //     })
-// //     .then(res => res.json())
-// //     .then(res => {
-
-// //       if (res.msg) {
-// //         console.log("API ERROR:", res.msg);
-// //         return;
-// //       }
-
-// //       const data = res.data || res;
-
-// //       const features = new ol.format.GeoJSON().readFeatures(data, {
-// //         dataProjection: "EPSG:4326",
-// //         featureProjection: "EPSG:3857"
-// //       });
-
-// //       indiaSource.clear();
-// //       indiaSource.addFeatures(features);
-
-// //       boundaryLoaded = true;
-
-// //       map.getView().fit(indiaSource.getExtent(), {
-// //         duration: 800,
-// //         padding: [20,20,20,20]
-// //       });
-// //     })
-// //     .catch(err => {
-// //       console.log("API ERROR ❌", err);
-// //     });
-
-// //   }
-
-// // function loadDistrict() {
-
-// //   fetch("https://mlinfomap.org/mlwapi/get_district_boundary", {
-// //     method: "POST",
-// //     headers: {
-// //       "Content-Type": "application/json",
-// //       "Authorization": "Bearer " + TOKEN
-// //     },
-// //     body: JSON.stringify({ circle: "All India" }),
-// //   })
-// //   .then(res => res.json())
-// //   .then(res => {
-
-// //     if (res.msg) {
-// //       console.log("API ERROR:", res.msg);
-// //       return;
-// //     }
-
-// //     const data = res.data || res;
-
-// //     const features = new ol.format.GeoJSON().readFeatures(data, {
-// //       dataProjection: "EPSG:4326",
-// //       featureProjection: "EPSG:3857"
-// //     });
-
-// //     districtSource.clear();
-// //     districtSource.addFeatures(features);
-
-// //     map.getView().fit(districtSource.getExtent(), {
-// //       duration: 800,
-// //       padding: [20,20,20,20]
-// //     });
-// //   })
-// //   .catch(err => {
-// //     console.log("District API ERROR ❌", err);
-// //   });
-// // }
-
-// // window.onload = function () {
-
-// //   source = new ol.source.Vector();
-
-// //   const layer = new ol.layer.Vector({
-// //     source: source
-// //   });
-
-// //   map = new ol.Map({
-// //     target: "map",
-// //     layers: [
-// //       new ol.layer.Tile({
-// //         source: new ol.source.OSM()
-// //       }),
-// //       layer,
-// //       indiaLayer,
-// //       districtLayer,
-// //       stateLayer,
-// //     ],
-// //     view: new ol.View({
-// //       center: ol.proj.fromLonLat([77.2090, 28.6139]),
-// //       zoom: 5
-// //     })
-// //   });
-// //  // ===== REMOVE HARDCODED HEATMAP =====
-
-// // // ===== ADD THIS =====
-// // const heatSource = new ol.source.Vector();
-
-// // const heatLayer = new ol.layer.Heatmap({
-// //   source: heatSource,
-// //   blur: 35,
-// //   radius: 25
-// // });
-
-// // map.addLayer(heatLayer);
-
-// // function loadRainHeatmap() {
-
-// //   // ✅ MATCH ANGULAR DATE FORMAT
-// //  const now = new Date();
-
-// // const selectedDate =
-// //   now.getFullYear() + "-" +
-// //   String(now.getMonth() + 1).padStart(2, "0") + "-" +
-// //   String(now.getDate()).padStart(2, "0") + " " +
-// //   String(now.getHours()).padStart(2, "0") + ":00";
-
-// // console.log("📅 SENDING DATE:", selectedDate);
-// // // console.log("📅 SENDING TOKEN:", TOKEN);
-
-// // fetch("https://mlinfomap.org/mlwapi/get-current-weather", {
-// //   method: "POST",
-// //   headers: {
-// //     "Content-Type": "application/json",
-// //     "Authorization": "Bearer " + TOKEN
-// //   },
-// //   body: JSON.stringify(
-// //   {params : {
-// //     selectedDate: selectedDate   // ✅ FIXED (NO params)
-// // }})
-// // })
-// // .then(res => res.json())
-// // .then(res => {
-
-// //   console.log("🔥 API RESPONSE:", JSON.stringify(res));
-// //   console.log("DATA LENGTH:", res?.data?.length);
-
-// //   if (!res?.data || res.data.length === 0) {
-// //     console.log("❌ No data from API");
-// //     return;
-// //   }
-
-// //   const data = res.data;
-
-// //   const maxRain = Math.max(...data.map(x => +x.chance_of_rain || 0));
-
-// //   heatSource.clear();
-
-// //   data.forEach(item => {
-
-// //     const lon = parseFloat(item.longitude || item.lon);
-// //     const lat = parseFloat(item.latitude || item.lat);
-// //     const rain = parseFloat(item.chance_of_rain || 0);
-
-// //     if (isNaN(lon) || isNaN(lat)) return;
-
-// //     const percent = maxRain === 0 ? 0 : (rain / maxRain);
-
-// //     const feature = new ol.Feature({
-// //       geometry: new ol.geom.Point(
-// //         ol.proj.fromLonLat([lon, lat])
-// //       ),
-// //       weight: percent
-// //     });
-
-// //     heatSource.addFeature(feature);
-// //   });
-
-// //   console.log("✅ FEATURES:", heatSource.getFeatures().length);
-// // })
-// // }
-
-// // // CALL IT
-// // loadRainHeatmap();
-
-// //   loadCircles(); //  ONLY THIS (IMPORTANT)
-// // };
-
-// // // added for search functionality (NEW)
-
-// // function handleSearchMessage(event) {
-// //   try {
-// //     const msg = JSON.parse(event.data);
-
-// //     console.log("MESSAGE RECEIVED:", msg); // 🔥 debug
-
-// //     if (msg.type === "SEARCH_LOCATION") {
-
-// //       const lon = parseFloat(msg.lon);
-// //       const lat = parseFloat(msg.lat);
-
-// //       const coords = ol.proj.fromLonLat([lon, lat]);
-
-// //       const view = map.getView();
-
-// //       //  move map
-// //       view.setCenter(coords);
-// //       view.setZoom(13);
-
-// //       //  remove old marker
-// //       source.clear();
-
-// //       //  create marker
-// //       const marker = new ol.Feature({
-// //         geometry: new ol.geom.Point(coords)
-// //       });
-
-// //       marker.setStyle(
-// //         new ol.style.Style({
-// //        image: new ol.style.Icon({
-// //   src: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-// //   scale: 0.05,
-// //   anchor: [0.5, 1],
-// // })
-// //         })
-// //       );
-
-// //       source.addFeature(marker);
-// //     }
-
-// //   } catch (e) {
-// //     console.log("Search message error:", e);
-// //   }
-// // }
-
-// // //  VERY IMPORTANT (add BOTH)
-// // window.addEventListener("message", handleSearchMessage);
-// // document.addEventListener("message", handleSearchMessage);
-
-// // //  region idw...................
-
-// // function getcurrentweather(circle) {
-// //   fetch("https://mlinfomap.org/mlwapi/get_state_boundary", {
-// //     method: "POST",
-// //     headers: {
-// //       "Content-Type": "application/json",
-// //       "Authorization": "Bearer " + TOKEN
-// //     },
-// //     body: JSON.stringify({ circle: circle })
-// //   })
-// //   .then(res => res.json())
-// //   .then(res => {
-
-// //     if (res.msg) {
-// //       console.log("API ERROR:", res.msg);
-// //       return;
-// //     }
-
-// //     const data = res.data || res;
-
-// //     const features = new ol.format.GeoJSON().readFeatures(data, {
-// //       dataProjection: "EPSG:4326",
-// //       featureProjection: "EPSG:3857"
-// //     });
-
-// //     stateSource.addFeatures(features);
-
-// //     map.getView().fit(stateSource.getExtent(), {
-// //       duration: 800,
-// //       padding: [20,20,20,20]
-// //     });
-// //   })
-// //   .catch(err => {
-// //     console.log("State API ERROR ❌", err);
-// //   });
-// // }
-
-// // </script>
-
-// // </body>
-// // </html>
-// //   `;
-
-//   const html = `
-// <!DOCTYPE html>
-// <html>
-// <head>
-// <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@7.5.2/ol.css">
-// <script src="https://cdn.jsdelivr.net/npm/ol@7.5.2/dist/ol.js"></script>
-
-// <!-- OL-EXT (REQUIRED FOR IDW) -->
-// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-ext/dist/ol-ext.min.css">
-// <script src="https://cdn.jsdelivr.net/npm/ol-ext/dist/ol-ext.min.js"></script>
-
-// <style>
-// html, body { margin:0; padding:0; height:100%; }
-// #map { width:100%; height:100%; }
-
-// .dropdown-container {
-//   position: absolute;
-//   top: 10px;
-//   right: 10px;
-//   z-index: 999;
-// }
-// </style>
-// </head>
-
-// <body>
-// <div class="dropdown-container">
-//   <select id="stateSelect" onchange="onStateChange()">
-//     <option>Loading...</option>
-//   </select>
-// </div>
-
-// <div id="map"></div>
-
-// <script>
-// const TOKEN = "${token}";
-
-// let map;
-// let indiaSource = new ol.source.Vector();
-// let stateSource = new ol.source.Vector();
-// let districtSource = new ol.source.Vector();
-
-// let indiaLayer = new ol.layer.Vector({ source: indiaSource });
-// let stateLayer = new ol.layer.Vector({ source: stateSource });
-// let districtLayer = new ol.layer.Vector({ source: districtSource });
-
-// /* =========================
-//    🔥 IDW SETUP (ONLY CHANGE)
-// ========================= */
-
-// const vectorSourceRain = new ol.source.Vector();
-
-// const idwSource = new ol.source.IDW({
-//   source: vectorSourceRain,
-//   weight: 'count'
-// });
-
-// const idwLayer = new ol.layer.Image({
-//   source: idwSource
-// });
-
-// /* ========================= */
-
-// function loadBoundary() {
-//   fetch("https://mlinfomap.org/mlwapi/get_india_boundary", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Authorization": "Bearer " + TOKEN
-//     },
-//     body: JSON.stringify({ circle: "All India" }),
-//   })
-//   .then(res => res.json())
-//   .then(res => {
-
-//     const data = res.data || res;
-
-//     const features = new ol.format.GeoJSON().readFeatures(data, {
-//       dataProjection: "EPSG:4326",
-//       featureProjection: "EPSG:3857"
-//     });
-
-//     indiaSource.clear();
-//     indiaSource.addFeatures(features);
-
-//     map.getView().fit(indiaSource.getExtent(), {
-//       duration: 800,
-//       padding: [20,20,20,20]
-//     });
-
-//     // 🔥 APPLY BOUNDARY TO IDW
-//     idwLayer.setExtent(indiaSource.getExtent());
-//   });
-// }
-
-// function loadDistrict() {
-//   fetch("https://mlinfomap.org/mlwapi/get_district_boundary", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Authorization": "Bearer " + TOKEN
-//     },
-//     body: JSON.stringify({ circle: "All India" }),
-//   })
-//   .then(res => res.json())
-//   .then(res => {
-
-//     const data = res.data || res;
-
-//     const features = new ol.format.GeoJSON().readFeatures(data, {
-//       dataProjection: "EPSG:4326",
-//       featureProjection: "EPSG:3857"
-//     });
-
-//     districtSource.clear();
-//     districtSource.addFeatures(features);
-//   });
-// }
-
-// /* =========================
-//    🔥 IDW DATA LOAD
-// ========================= */
-// function cropIDWToIndia() {
-
-//   const features = indiaSource.getFeatures();
-//   if (!features.length) return;
-
-//   // 🔥 merge all geometries
-//   const indiaGeoms = features.map(f => f.getGeometry());
-
-//   const allFeatures = vectorSourceRain.getFeatures();
-
-//   allFeatures.forEach(f => {
-
-//     const coord = f.getGeometry().getCoordinates();
-
-//     // check against ALL polygons
-//     const inside = indiaGeoms.some(g => g.intersectsCoordinate(coord));
-
-//     if (!inside) {
-//       vectorSourceRain.removeFeature(f);
-//     }
-//   });
-
-//   console.log("✅ Proper India crop applied");
-// }
-
-// function loadRainIDW() {
-
-//   const now = new Date();
-
-//   const selectedDate =
-//     now.getFullYear() + "-" +
-//     String(now.getMonth() + 1).padStart(2, "0") + "-" +
-//     String(now.getDate()).padStart(2, "0") + " " +
-//     String(now.getHours()).padStart(2, "0") + ":00";
-
-//   fetch("https://mlinfomap.org/mlwapi/get-current-weather", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Authorization": "Bearer " + TOKEN
-//     },
-//     body: JSON.stringify({
-//       params: {
-//         selectedDate: selectedDate
-//       }
-//     })
-//   })
-//   .then(res => res.json())
-//   .then(res => {
-
-//     if (!res?.data || res.data.length === 0) return;
-
-//     const data = res.data;
-
-//     const maxRain = Math.max(...data.map(x => +x.chance_of_rain || 0));
-
-//     vectorSourceRain.clear();
-
-//     data.forEach(item => {
-
-//       const lon = parseFloat(item.longitude || item.lon);
-//       const lat = parseFloat(item.latitude || item.lat);
-//       const rain = parseFloat(item.chance_of_rain || 0);
-
-//       if (isNaN(lon) || isNaN(lat)) return;
-
-//       const percent = maxRain === 0 ? 0 : Math.ceil((rain / maxRain) * 100);
-
-//       const feature = new ol.Feature({
-//         geometry: new ol.geom.Point(
-//           ol.proj.fromLonLat([lon, lat])
-//         ),
-//         count: percent,
-//         total: rain
-//       });
-
-//       vectorSourceRain.addFeature(feature);
-
-//     });
-//       cropIDWToIndia();
-
-//     console.log("✅ IDW FEATURES:", vectorSourceRain.getFeatures().length);
-//   });
-// }
-
-// /* ========================= */
-
-// window.onload = function () {
-
-//   map = new ol.Map({
-//     target: "map",
-//     layers: [
-//       new ol.layer.Tile({
-//         source: new ol.source.OSM()
-//       }),
-//       indiaLayer,
-//       districtLayer,
-//       stateLayer,
-//       idwLayer   // 🔥 ADDED IDW
-//     ],
-//     view: new ol.View({
-//       center: ol.proj.fromLonLat([77.2090, 28.6139]),
-//       zoom: 5
-//     })
-//   });
-
-//   loadBoundary();
-//   loadDistrict();
-//   loadRainIDW();
-// };
-// </script>
-
-// </body>
-// </html>
-// `;
-
-//   return (
-//     <SafeAreaView style={{ flex: 1 }}>
-//       <ScrollView>
-//         <ReportScreen />
-//         <SearchBar webViewRef={webViewRef} />
-//         <IDW webViewRef={webViewRef} />
-//         <WebView
-//           ref={webViewRef}
-//           originWhitelist={["*"]}
-//           source={{ html }}
-//           javaScriptEnabled
-//           domStorageEnabled
-//           onMessage={(event) => {
-//             try {
-//               const msg = JSON.parse(event.nativeEvent.data);
-
-//               //  IMPORTANT FIX
-//               if (msg.type === "LOCATION_CHANGE") {
-//                 console.log("NEW LOCATION:", msg.coords);
-
-//                 setLocation(msg.coords);
-//                 setLocationName(msg.name); //  THIS WAS MISSING
-//               }
-//             } catch (e) {
-//               console.log("WEBVIEW:", event.nativeEvent.data);
-//             }
-//           }}
-//           injectedJavaScript={`
-//     (function() {
-//       const oldLog = console.log;
-//       console.log = function(...args) {
-//         window.ReactNativeWebView.postMessage(args.join(" "));
-//         oldLog.apply(console, args);
-//       };
-//     })();
-//     true;
-//   `}
-//  />
-//         <WebView
-//           ref={webViewRef}
-//           originWhitelist={["*"]}
-//           source={{ html }}
-//           javaScriptEnabled
-//           domStorageEnabled
-//           onMessage={(event) => {
-//             try {
-//               const msg = JSON.parse(event.nativeEvent.data);
-
-//               //  IMPORTANT FIX
-//               if (msg.type === "LOCATION_CHANGE") {
-//                 console.log("NEW LOCATION:", msg.coords);
-
-//                 setLocation(msg.coords);
-//                 setLocationName(msg.name); //  THIS WAS MISSING
-//               }
-//             } catch (e) {
-//               console.log("WEBVIEW:", event.nativeEvent.data);
-//             }
-//           }}
-//           injectedJavaScript={`
-//     (function() {
-//       const oldLog = console.log;
-//       console.log = function(...args) {
-//         window.ReactNativeWebView.postMessage(args.join(" "));
-//         oldLog.apply(console, args);
-//       };
-//     })();
-//     true;
-//   `}
-//           style={{ height: 600 }}
-//         />
-//         <ForecastCards />
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// }
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import ReportScreen from "./ReportScreen";
+import TodayWeather from "../component/TodayWeather";
 import ForecastCards from "./forcastcards";
 import { WeatherContext } from "../context/WeatherContext";
 import { fetchWeather } from "../api/Api";
@@ -981,6 +60,25 @@ html, body { margin: 0; padding: 0; height: 100%; }
 </head>
 
 <body>
+
+<div id="popup" style="
+  position:absolute;
+  background:white;
+  border-radius:8px;
+  border:1px solid #ccc;
+  min-width:150px;
+  display:none;
+  z-index:1000;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+">
+
+  <div style="display:flex; justify-content:flex-end; padding:4px;">
+    <span onclick="hidePopup()" style="cursor:pointer; font-weight:bold; color:red;">✖</span>
+  </div>
+
+  <div id="popup-content" style="padding:8px;"></div>
+</div>
+
 <div class="dropdown-container">
   <select id="stateSelect" onchange="onStateChange()">
     <option>Loading...</option>
@@ -994,15 +92,52 @@ const TOKEN = "${token}";
 const DEFAULT_PADDING = [20, 20, 20, 20];
 
 let map;
+// -------------------popup-----
+let popupContainer;
+let popupContent;
+let popupOverlay;
+let popupWeatherRequestId = 0;
+// ----------------------------
+
 const searchSource = new ol.source.Vector();
 const indiaSource = new ol.source.Vector();
 const stateSource = new ol.source.Vector();
 const districtSource = new ol.source.Vector();
+const vectorSourceTemp = new ol.source.Vector();
 const vectorSourceRain = new ol.source.Vector();
 const vectorSourceWind = new ol.source.Vector();
 const vectorSourceHumidity = new ol.source.Vector();
-const vectorSourceVisibilty = new ol.source.Vector();
-const vectorSourceTemprature = new ol.source.Vector();
+const vectorSourceFog = new ol.source.Vector();
+const WEATHER_IDW_CONFIG = {
+  RAIN_IDW: {
+    label: "Rainfall",
+    key: "rain",
+    valueFields: ["chance_of_rain"]
+  },
+  WIND_IDW: {
+    label: "Wind",
+    key: "wind",
+    valueFields: ["wind_kph", "wind_speed", "wind"]
+  },
+  HUMIDITY_IDW: {
+    label: "Humidity",
+    key: "humidity",
+    valueFields: ["humidity"]
+  },
+  VISIBILITY_IDW: {
+    label: "Visibility",
+    key: "fog",
+    valueFields: ["vis_km", "visibility"]
+  },
+  TEMPERATURE_IDW: {
+    label: "Temperature",
+    key: "temp",
+    valueFields: ["temp_c", "temperature"]
+  }
+};
+let activeWeatherIDWType = null;
+let processedWeatherGrid = null;
+let processedWeatherHourKey = null;
 
 const searchLayer = new ol.layer.Vector({
   source: searchSource
@@ -1025,7 +160,7 @@ const stateLayer = new ol.layer.Vector({
   source: stateSource,
   style: new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: "rgba(0, 102, 255, 0.85)",
+      color: "rgba(4, 48, 85, 0.85)",
       width: 2
     }),
     fill: new ol.style.Fill({
@@ -1052,7 +187,8 @@ const idwLayer = new ol.layer.Image({
     source: vectorSourceRain,
     weight: "count"
   }),
-  opacity: 0.75
+  opacity: 0.75,
+  visible: false   //  ADD THIS
 });
 
 function postToReactNative(payload) {
@@ -1097,16 +233,16 @@ function getBoundaryPolygons() {
   return polygons;
 }
 
-function cropRainPointsToIndia() {
+function cropIDWPointsToIndia(vectorSource) {
   const polygons = getBoundaryPolygons();
   if (!polygons.length) return;
 
-  vectorSourceRain.getFeatures().slice().forEach(feature => {
+  vectorSource.getFeatures().slice().forEach(feature => {
     const coord = feature.getGeometry().getCoordinates();
     const inside = polygons.some(poly => poly.intersectsCoordinate(coord));
 
     if (!inside) {
-      vectorSourceRain.removeFeature(feature);
+      vectorSource.removeFeature(feature);
     }
   });
 }
@@ -1293,13 +429,205 @@ function loadDistrict(circle = "All India") {
   });
 }
 
-function loadRainIDW() {
+function getWeatherMetricValue(item, valueFields) {
+  for (let index = 0; index < valueFields.length; index += 1) {
+    const metricValue = parseFloat(item[valueFields[index]]);
+
+    if (Number.isFinite(metricValue)) {
+      return metricValue;
+    }
+  }
+
+  return null;
+}
+
+function getSelectedDateHour() {
   const now = new Date();
-  const selectedDate =
+
+  return (
     now.getFullYear() + "-" +
     String(now.getMonth() + 1).padStart(2, "0") + "-" +
     String(now.getDate()).padStart(2, "0") + " " +
-    String(now.getHours()).padStart(2, "0") + ":00";
+    String(now.getHours()).padStart(2, "0") + ":00"
+  );
+}
+
+function getMinMax(data, valueFields) {
+  const values = data
+    .map((item) => getWeatherMetricValue(item, valueFields))
+    .filter((value) => Number.isFinite(value));
+
+  if (!values.length) {
+    return { min: 0, max: 0 };
+  }
+
+  return {
+    min: Math.min(...values),
+    max: Math.max(...values)
+  };
+}
+
+function safePercent(value, max) {
+  return max === 0 ? 0 : Math.ceil((value / max) * 100);
+}
+
+function createFeature(coord, total, count) {
+  return new ol.Feature({
+    geometry: new ol.geom.Point(coord),
+    total: total,
+    count: count
+  });
+}
+
+function createIDW(vectorSource) {
+  return new ol.source.IDW({
+    source: vectorSource,
+    weight: "count"
+  });
+}
+
+function processWeatherData(data) {
+  const temp = getMinMax(data, WEATHER_IDW_CONFIG.TEMPERATURE_IDW.valueFields);
+  const rain = getMinMax(data, WEATHER_IDW_CONFIG.RAIN_IDW.valueFields);
+  const wind = getMinMax(data, WEATHER_IDW_CONFIG.WIND_IDW.valueFields);
+  const humidity = getMinMax(data, WEATHER_IDW_CONFIG.HUMIDITY_IDW.valueFields);
+  const fog = getMinMax(data, WEATHER_IDW_CONFIG.VISIBILITY_IDW.valueFields);
+  const absTmin = Math.abs(temp.min);
+
+  [
+    vectorSourceTemp,
+    vectorSourceRain,
+    vectorSourceWind,
+    vectorSourceHumidity,
+    vectorSourceFog
+  ].forEach((source) => source.clear());
+
+  data.forEach((item) => {
+    const lon = parseFloat(item.longitude || item.lon);
+    const lat = parseFloat(item.latitude || item.lat);
+
+    if (isNaN(lon) || isNaN(lat)) return;
+
+    const coord = ol.proj.fromLonLat([lon, lat]);
+    const tempValue = getWeatherMetricValue(
+      item,
+      WEATHER_IDW_CONFIG.TEMPERATURE_IDW.valueFields
+    );
+    const rainValue = getWeatherMetricValue(
+      item,
+      WEATHER_IDW_CONFIG.RAIN_IDW.valueFields
+    );
+    const windValue = getWeatherMetricValue(
+      item,
+      WEATHER_IDW_CONFIG.WIND_IDW.valueFields
+    );
+    const humidityValue = getWeatherMetricValue(
+      item,
+      WEATHER_IDW_CONFIG.HUMIDITY_IDW.valueFields
+    );
+    const fogValue = getWeatherMetricValue(
+      item,
+      WEATHER_IDW_CONFIG.VISIBILITY_IDW.valueFields
+    );
+
+    if (Number.isFinite(tempValue)) {
+      const adjustedTemp = tempValue + absTmin;
+
+      vectorSourceTemp.addFeature(
+        createFeature(
+          coord,
+          adjustedTemp,
+          safePercent(adjustedTemp, temp.max + absTmin)
+        )
+      );
+    }
+
+    if (Number.isFinite(rainValue)) {
+      vectorSourceRain.addFeature(
+        createFeature(
+          coord,
+          rainValue,
+          safePercent(rainValue, rain.max)
+        )
+      );
+    }
+
+    if (Number.isFinite(windValue)) {
+      vectorSourceWind.addFeature(
+        createFeature(
+          coord,
+          windValue,
+          safePercent(windValue, wind.max)
+        )
+      );
+    }
+
+    if (Number.isFinite(humidityValue)) {
+      vectorSourceHumidity.addFeature(
+        createFeature(
+          coord,
+          humidityValue,
+          safePercent(humidityValue, humidity.max)
+        )
+      );
+    }
+
+    if (Number.isFinite(fogValue)) {
+      vectorSourceFog.addFeature(
+        createFeature(
+          coord,
+          fogValue,
+          safePercent(fog.max - fogValue, fog.max)
+        )
+      );
+    }
+  });
+
+  [
+    vectorSourceTemp,
+    vectorSourceRain,
+    vectorSourceWind,
+    vectorSourceHumidity,
+    vectorSourceFog
+  ].forEach((source) => cropIDWPointsToIndia(source));
+
+  return {
+    temp: createIDW(vectorSourceTemp),
+    rain: createIDW(vectorSourceRain),
+    wind: createIDW(vectorSourceWind),
+    humidity: createIDW(vectorSourceHumidity),
+    fog: createIDW(vectorSourceFog),
+    meta: {
+      temp: temp,
+      rain: rain,
+      wind: wind,
+      humidity: humidity,
+      fog: fog
+    }
+  };
+}
+
+function applyProcessedData(grid, type) {
+  const idwConfig = WEATHER_IDW_CONFIG[type] || WEATHER_IDW_CONFIG.RAIN_IDW;
+
+  idwLayer.setSource(grid[idwConfig.key]);
+  idwLayer.changed();
+  map.render();
+}
+
+function loadWeatherIDW(type = "RAIN_IDW") {
+  const idwConfig = WEATHER_IDW_CONFIG[type] || WEATHER_IDW_CONFIG.RAIN_IDW;
+  const selectedDate = getSelectedDateHour();
+
+  if (processedWeatherGrid && processedWeatherHourKey === selectedDate) {
+    applyProcessedData(processedWeatherGrid, type);
+      postToReactNative({ type: "IDW_LOADED" });   // ------------------------------ HERE
+    console.log(
+      idwConfig.label + " IDW features:",
+      getSourceForType(type).getFeatures().length
+    );
+    return Promise.resolve(processedWeatherGrid);
+  }
 
   return fetch("https://mlinfomap.org/mlwapi/get-current-weather", {
     method: "POST",
@@ -1313,47 +641,67 @@ function loadRainIDW() {
       }
     })
   })
+
   .then((res) => res.json())
   .then((res) => {
     if (!res?.data || res.data.length === 0) {
-      vectorSourceRain.clear();
+      [
+        vectorSourceTemp,
+        vectorSourceRain,
+        vectorSourceWind,
+        vectorSourceHumidity,
+        vectorSourceFog
+      ].forEach((source) => source.clear());
+      processedWeatherGrid = null;
+      processedWeatherHourKey = null;
       idwLayer.changed();
       map.render();
       return;
     }
 
-    const data = res.data;
-    const maxRain = Math.max(...data.map((item) => +item.chance_of_rain || 0));
+    processedWeatherGrid = processWeatherData(res.data);
+    processedWeatherHourKey = selectedDate;
+    applyProcessedData(processedWeatherGrid, type);
 
-    vectorSourceRain.clear();
+    console.log(
+      idwConfig.label + " IDW features:",
+      getSourceForType(type).getFeatures().length
+    );
 
-    data.forEach((item) => {
-      const lon = parseFloat(item.longitude || item.lon);
-      const lat = parseFloat(item.latitude || item.lat);
-      const rain = parseFloat(item.chance_of_rain || 0);
-
-      if (isNaN(lon) || isNaN(lat)) return;
-
-      const percent = maxRain === 0 ? 0 : Math.ceil((rain / maxRain) * 100);
-
-      vectorSourceRain.addFeature(
-        new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat])),
-          count: percent,
-          total: rain
-        })
-      );
-    });
-
-    cropRainPointsToIndia();
-    idwLayer.changed();
-    map.render();
-
-    console.log("India-clipped IDW features:", vectorSourceRain.getFeatures().length);
+    return processedWeatherGrid;
   })
   .catch((error) => {
-    console.log("Rain IDW ERROR", error);
+    console.log(idwConfig.label + " IDW ERROR", error);
   });
+}
+
+function getSourceForType(type) {
+  const idwConfig = WEATHER_IDW_CONFIG[type] || WEATHER_IDW_CONFIG.RAIN_IDW;
+  const sourceMap = {
+    temp: vectorSourceTemp,
+    rain: vectorSourceRain,
+    wind: vectorSourceWind,
+    humidity: vectorSourceHumidity,
+    fog: vectorSourceFog
+  };
+
+  return sourceMap[idwConfig.key] || vectorSourceRain;
+}
+
+function toggleWeatherIDW(type) {
+  const isVisible = idwLayer.getVisible();
+  const isSameType = activeWeatherIDWType === type;
+
+  if (isVisible && isSameType) {
+    idwLayer.setVisible(false);
+    activeWeatherIDWType = null;
+    map.render();
+    return;
+  }
+
+  activeWeatherIDWType = type;
+  idwLayer.setVisible(true);
+  loadWeatherIDW(type);
 }
 
 function showSearchLocation(lon, lat) {
@@ -1361,6 +709,7 @@ function showSearchLocation(lon, lat) {
 
   const coords = ol.proj.fromLonLat([lon, lat]);
 
+  hidePopup(); //----popup------
   searchSource.clear();
 
   const marker = new ol.Feature({
@@ -1385,6 +734,223 @@ function showSearchLocation(lon, lat) {
     duration: 800
   });
 }
+// ---------popup--------------------------------------------------
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getPopupTitle(feature) {
+  if (!feature || typeof feature.getProperties !== "function") {
+    return "Selected location";
+  }
+
+  const properties = feature.getProperties();
+  const titleCandidates = [
+    properties.location_name,
+    properties.full_name,
+    properties.district_name,
+    properties.district,
+    properties.state_name,
+    properties.state,
+    properties.name,
+    properties.NAME_2,
+    properties.NAME_1,
+    properties.label
+  ];
+
+  return (
+    titleCandidates.find(
+      (value) => typeof value === "string" && value.trim().length > 0
+    ) || "Selected location"
+  );
+}
+
+function hidePopup() {
+  if (!popupContainer || !popupOverlay) return;
+
+  popupWeatherRequestId += 1;
+  popupContainer.style.display = "none";
+  popupOverlay.setPosition(undefined);
+}
+
+function showPopupMessage(coordinate, message) {
+  if (!popupContainer || !popupContent || !popupOverlay) return;
+
+  popupContent.innerHTML =
+    "<div style='padding:8px; font-family:Segoe UI; font-size:12px;'>"
+    + escapeHtml(message)
+    + "</div>";
+
+  popupContainer.style.display = "block";
+  popupOverlay.setPosition(coordinate);
+}
+
+function getFeatureLabel(feature, keys) {
+  if (!feature || typeof feature.getProperties !== "function") {
+    return "";
+  }
+
+  const properties = feature.getProperties();
+
+  return (
+    keys
+      .map((key) => properties[key])
+      .find((value) => typeof value === "string" && value.trim().length > 0) || ""
+  );
+}
+
+function showPopup(coordinate, feature, weather) {
+  if (!popupContainer || !popupContent || !popupOverlay) return;
+
+  if (!weather?.current || !weather?.forecast?.forecastday?.[0]?.hour) {
+    showPopupMessage(coordinate, "Weather data not available");
+    return;
+  }
+
+  const current = weather.current;
+  const hours = weather.forecast.forecastday[0].hour || [];
+  const localHour = parseInt(
+    ((weather.location?.localtime || "").split(" ")[1] || "").split(":")[0],
+    10
+  );
+  const nowHour = Number.isFinite(localHour) ? localHour : new Date().getHours();
+  const currentHour = hours[nowHour] || hours[0] || {};
+  const locationName =
+    weather.location?.name || getPopupTitle(feature);
+  const stateName =
+    weather.location?.region ||
+    getFeatureLabel(feature, ["state_name", "state", "NAME_1"]) ||
+    "N/A";
+  const districtName =
+    getFeatureLabel(feature, ["district_name", "district", "name", "NAME_2"]) ||
+    weather.location?.name ||
+    "N/A";
+  const iconUrl = current?.condition?.icon ? "https:" + current.condition.icon : "";
+  const rainChance = Number.isFinite(Number(currentHour.chance_of_rain))
+    ? currentHour.chance_of_rain
+    : 0;
+  const rainAmount = Number.isFinite(Number(currentHour.precip_mm))
+    ? currentHour.precip_mm
+    : 0;
+  const timeLabel =
+    typeof currentHour.time === "string" && currentHour.time.includes(" ")
+      ? currentHour.time.split(" ")[1]
+      : String(nowHour).padStart(2, "0") + ":00";
+
+  const next6 = [];
+  for (let i = 1; i <= 6; i++) {
+    if (hours[nowHour + i]) {
+      next6.push(hours[nowHour + i]);
+    }
+  }
+
+  //  build table rows safely
+  let rows = "";
+  next6.forEach((h, i) => {
+    const bg = i % 2 === 0 ? "#fde2d2" : "#fdece5";
+    const rainColor = h.chance_of_rain > 0 ? "#d9534f" : "#28a745";
+    const mmColor = h.precip_mm > 0 ? "#d9534f" : "#28a745";
+
+    rows +=
+      "<tr style='background:" + bg + ";'>" +
+        "<td>" + h.time.split(" ")[1] + "</td>" +
+        "<td style='color:" + rainColor + ";'>" + h.chance_of_rain + "</td>" +
+        "<td style='color:" + mmColor + ";'>" + h.precip_mm + "</td>" +
+      "</tr>";
+  });
+
+  popupContent.innerHTML =
+    "<div style='font-family:Segoe UI; font-size:12px;'>"
+
+    + "<div style='border-bottom:1px solid #ddd; margin-bottom:6px;'>"
+    + "<div><b>Location:</b> " + escapeHtml(locationName) + "</div>"
+    + "<div><b>State:</b> " + escapeHtml(stateName) + "</div>"
+    + "<div><b>District:</b> " + escapeHtml(districtName) + "</div>"
+    + "</div>"
+
+    + "<div style='display:flex; gap:10px; align-items:center;'>"
+
+      + "<div style='text-align:center; border-right:1px solid #ccc; padding-right:8px;'>"
+      + (iconUrl ? "<img src='" + escapeHtml(iconUrl) + "' width='36'/>" : "")
+      + "<div style='font-size:18px; font-weight:bold;'>"
+      + rainChance + "%"
+      + "</div>"
+      + "<div style='font-size:11px;'>"
+      + escapeHtml(current?.condition?.text || "Condition not available")
+      + "</div>"
+      + "</div>"
+
+      + "<div>"
+      + "<div style='font-weight:bold;'>" + escapeHtml(timeLabel) + "</div>"
+      + "<div style='color:#666;'>Rain Probability</div>"
+      + "<div><b>" + rainAmount + " mm</b></div>"
+      + "</div>"
+
+    + "</div>"
+
+    + "<div style='margin-top:8px;'>"
+    + "<table style='width:100%; font-size:11px; border-collapse:collapse;'>"
+
+    + "<tr style='background:#f77f00; color:white;'>"
+    + "<th>Hours</th><th>%</th><th>mm</th>"
+    + "</tr>"
+
+    + rows
+
+    + "</table>"
+    + "</div>"
+
+    + "</div>";
+
+  popupContainer.style.display = "block";
+  popupOverlay.setPosition(coordinate);
+}
+
+function loadPopupWeather(coordinate, lon, lat, feature) {
+  const requestId = popupWeatherRequestId + 1;
+  popupWeatherRequestId = requestId;
+
+  showPopupMessage(coordinate, "Loading weather...");
+
+  return fetch("https://mlinfomap.org/mlwapi/get_weather", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + TOKEN
+    },
+    body: JSON.stringify({
+      q: lat + "," + lon
+    })
+  })
+  .then(async (res) => ({
+    ok: res.ok,
+    payload: await res.json()
+  }))
+  .then(({ ok, payload }) => {
+    if (requestId !== popupWeatherRequestId) return;
+
+    if (!ok || !payload?.current || !payload?.forecast?.forecastday?.length) {
+      showPopupMessage(
+        coordinate,
+        payload?.msg || payload?.message || "Weather data not available"
+      );
+      return;
+    }
+
+    showPopup(coordinate, feature, payload);
+  })
+  .catch((error) => {
+    if (requestId !== popupWeatherRequestId) return;
+
+    console.log("Popup weather error", error);
+    showPopupMessage(coordinate, "Unable to load weather");
+  });
+}
 
 function onStateChange() {
   const select = document.getElementById("stateSelect");
@@ -1393,6 +959,7 @@ function onStateChange() {
   const coords = option.getAttribute("data-coords");
   const name = option.getAttribute("data-location-name") || selected;
 
+  hidePopup();//------popup------------------------------------------
   stateSource.clear();
   districtSource.clear();
 
@@ -1418,14 +985,24 @@ function handleNativeMessage(event) {
   try {
     const message = JSON.parse(event.data);
 
+    //  WEATHER DATA
+    if (message.type === "WEATHER_DATA") {
+      window.weatherData = message.payload;
+      console.log("Weather received:", window.weatherData);
+      return;
+    }
+
+    //  SEARCH
     if (message.type === "SEARCH_LOCATION") {
       showSearchLocation(parseFloat(message.lon), parseFloat(message.lat));
       return;
     }
 
-    if (message.type === "RAIN_IDW") {
-      loadRainIDW();
+    // IDW
+    if (WEATHER_IDW_CONFIG[message.type]) {
+      toggleWeatherIDW(message.type);
     }
+
   } catch (error) {
     console.log("Bridge message error", error);
   }
@@ -1452,13 +1029,38 @@ window.onload = function () {
       zoom: 5
     })
   });
+// -------------popup container----------------------
+  popupContainer = document.getElementById("popup");
+  popupContent = document.getElementById("popup-content");
+  popupOverlay = new ol.Overlay({
+    element: popupContainer,
+    positioning: "bottom-center",
+    offset: [0, -12],
+    autoPan: {
+      animation: {
+        duration: 250
+      }
+    }
+  });
+
+  map.addOverlay(popupOverlay);
+  map.on("click", function (event) {
+    const feature = map.forEachFeatureAtPixel(event.pixel, function (item) {
+      return item;
+    });
+    const lonLat = ol.proj.toLonLat(event.coordinate);
+
+    loadPopupWeather(event.coordinate, lonLat[0], lonLat[1], feature);
+  });
+  map.on("pointerdrag", hidePopup); //popup container------------------------------------
 
   Promise.all([
     loadBoundary(),
     loadDistrict("All India"),
-    loadCircles()
+    loadCircles(),
+    loadState("All India"),
   ]).then(() => {
-    loadRainIDW();
+    loadWeatherIDW("RAIN_IDW");
   });
 };
 </script>
@@ -1469,12 +1071,12 @@ window.onload = function () {
 }
 
 export default function HomeScreen() {
-  const { setData, location, setLocation, setLocationName } =
+  const { setData, location, setLocation, setLocationName,data } =
     useContext(WeatherContext);
   const [token, setToken] = useState(null);
   const [webViewSource, setWebViewSource] = useState(null);
   const webViewRef = useRef(null);
-
+  const [idwLoading, setIdwLoading] = useState(false);
   useEffect(() => {
     AsyncStorage.getItem("token").then(setToken);
   }, []);
@@ -1517,6 +1119,16 @@ export default function HomeScreen() {
 
     getWeather();
   }, [location, setData]);
+  useEffect(() => {
+    if (data && webViewRef.current) {
+      webViewRef.current.postMessage(
+        JSON.stringify({
+          type: "WEATHER_DATA",
+          payload: data,
+        }),
+      );
+    }
+  }, [data]);
 
   const handleWebViewMessage = (event) => {
     try {
@@ -1526,6 +1138,9 @@ export default function HomeScreen() {
         setLocation(msg.coords);
         setLocationName(msg.name);
       }
+          if (msg.type === "IDW_LOADED") {
+            setIdwLoading(false); // stop loader
+          }
     } catch (error) {
       console.log("WEBVIEW:", event.nativeEvent.data);
     }
@@ -1542,9 +1157,13 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
-        <ReportScreen />
+        <TodayWeather />
         <SearchBar webViewRef={webViewRef} />
-        <IDW webViewRef={webViewRef} />
+        <IDW
+          webViewRef={webViewRef}
+          loading={idwLoading}
+          setLoading={setIdwLoading}
+        />
         <WebView
           ref={webViewRef}
           originWhitelist={["*"]}
@@ -1561,11 +1180,18 @@ export default function HomeScreen() {
   );
 }
 
-/*** Fetched current weather API data for IDW layer(shwoing server error data not) debugged (params problem)
- * 
-Debugged the issue where current weather data was not showing properly.
-Prepared weather data and mapped latitude/longitude points for IDW.
-Added vector source and connected the source for IDW layer generation.
-Calculated min and max values from weather data and bound them into IDW.
-Clipped the IDW layer based on India boundary so it stays inside the boundary.
-Debugged and fixed the issue where IDW was not showing properly on the map.*/
+
+/*
+Debugged the map popup issue where hardcoded weather details were showing instead of location-based API data.
+Traced the map click flow and identified that popup data was not fetching dynamically for clicked coordinates.
+Integrated dynamic weather API calling on map click using the selected latitude and longitude.
+Updated popup rendering to show live weather details, state, and district information instead of hardcoded values.
+Added popup loading and error handling so users see proper feedback while weather data is being fetched.
+Improved popup request handling to prevent older API responses from overwriting newer clicked location data.
+Investigated the RNCWebView duplicate registration issue and updated project configuration to avoid WebView native conflict.
+
+Implemented interactive map click popup using WebView and OpenLayers.
+Extracted and displayed district name from GeoJSON boundary data on map click.
+Designed and styled a structured weather popup UI with icon and details.
+Integrated and mapped real-time weather API data (current and hourly) to popup.
+Debugged and fixed WebView communication to ensure proper data transfer from React N*/

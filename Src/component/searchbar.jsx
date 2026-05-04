@@ -26,10 +26,7 @@ const handleSearch = async () => {
     });
 
     const text = await res.text();
-
-    //  DEBUG (see actual response)
-    console.log("RAW RESPONSE:", text);
-
+    
     const data = JSON.parse(text);
 
     if (data.length === 0) {
@@ -98,3 +95,19 @@ const createStyles = (theme) =>
       color: "white",
     },
   });
+
+
+
+
+
+
+
+
+
+/*1.Implemented IDW loader overlay on map and synced it with WebView response
+2.Fixed IDW button active state highlighting and toggle behavior
+3.Added click handling for all KPI buttons Rainfall, Wind, Humidity, Visibility, and Temperature
+4.Updated WebView message routing in HomeScreen.jsx to toggle the correct KPI-based IDW layer
+5.Implemented common weather data processing logic for all KPI layers using min/max and percentage mapping
+6.change in the cards ui and added missing fields in cards
+*/

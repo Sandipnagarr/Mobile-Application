@@ -8,6 +8,7 @@ export const WeatherProvider = ({ children }) => {
   const [locationName, setLocationName] = useState(null); // 
   const [theme, setTheme] = useState(null); // New state for theme
 
+
   return (
     <WeatherContext.Provider
       value={{

@@ -14,7 +14,7 @@ export const defaultTheme = {
   min_other_color: "#ffffff",
 
   //  Header
-  header_gradient_start: "#000000",
+  header_gradient_start: "#5a9fdf",
   header_gradient_end: "#63bbee",
   header_text_color: "#0077b6",
 

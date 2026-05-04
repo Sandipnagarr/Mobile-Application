@@ -40,7 +40,6 @@ const Login = ({ onLogin }) => {
           userpassword: password,
         }),
       });
-      console.log("Login API Response:", response);
       const data = await response.json();
 
       if (!response.ok) {
