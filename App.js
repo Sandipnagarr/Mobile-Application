@@ -68,3 +68,16 @@ export default function App() {
     </WeatherProvider>
   );
 }
+/**
+ 
+made Hazard component structure integrated it into the main screen and designed the UI
+Fetched get-ndma-hazards-list API to get hazards rendered dynamic buttons and bound the data
+Implemented default active hazard selection and added icons to hazard tabs
+Fetched get-ndma-severity-list API to get severity types
+Built a custom severity dropdown with selection handling and UI binding
+Connected get-ndma-today-disasters API  to render table (facing internal server error)
+Created context to share the circle across all components and rendered hazards based on the selected circle
+
+
+
+ */

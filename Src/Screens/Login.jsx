@@ -31,6 +31,7 @@ const Login = ({ onLogin }) => {
       setIsLoading(true);
 
       const response = await fetch("https://mlinfomap.org/mlwapi/userLogin", {
+        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,6 +42,8 @@ const Login = ({ onLogin }) => {
         }),
       });
       const data = await response.json();
+      
+//  console.log("LOGIN RESPONSE:", JSON.stringify(data, null, 2));
 
       if (!response.ok) {
         Alert.alert(

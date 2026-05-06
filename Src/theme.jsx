@@ -25,7 +25,7 @@ export const defaultTheme = {
 
   //  Buttons
   primary_button_bg: "#2977c0",
-  active_button_color: "#73153c",
+active_button_color  : "#73153c",
 
   //  Text
   secondary_text_color: "#1092dd",

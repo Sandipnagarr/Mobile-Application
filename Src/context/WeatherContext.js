@@ -7,11 +7,14 @@ export const WeatherProvider = ({ children }) => {
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState(null); // 
   const [theme, setTheme] = useState(null); // New state for theme
+  const [circle, setCircle] = useState(null);
 
 
   return (
     <WeatherContext.Provider
       value={{
+        circle,
+        setCircle,
         data,
         setData,
         location,

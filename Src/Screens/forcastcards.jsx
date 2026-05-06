@@ -20,9 +20,6 @@ export default function ForecastCards() {
 
   const [showHourly, setShowHourly] = useState(true);
   const [showDaily, setShowDaily] = useState(false);
-  const [showHazard, setShowHazard] = useState(false);
-  const [activeHazard, setActiveHazard] = useState("Rainfall");
-  const [isToggleOn, setIsToggleOn] = useState(false);
 
 if (!data) {
   return <Text>Loading forecast...</Text>;
@@ -157,111 +154,12 @@ const currentHour = new Date().getHours();
             </View>
           ))}
         </ScrollView>
-      )}
-
-      {/* HAZARD */}
-      <Pressable
-        style={[styles.accordionTab, showHazard && styles.activeAccordionTab]}
-        onPress={() => setShowHazard(!showHazard)}
-      >
-        <Text
-          style={[
-            styles.tabTitle,
-            { color: showHazard ? safeTheme.secondary_text_color : "#fff" },
-          ]}
-        >
-          Weather Hazards
-        </Text>
-        <Text style={styles.arrow}>{showHazard ? "▲" : "▼"}</Text>
-      </Pressable>
-
-      {showHazard && (
-        <View style={styles.hazardCard}>
-          {/* 🔹 Hazard Type Buttons (like Angular tabs) */}
-          <Text style={styles.label}>Hazard Type</Text>
-          <View style={styles.hazardTabs}>
-            {["Rainfall", "Wind", "Humidity", "Fog", "Temperature"].map(
-              (item) => {
-                const isActive = activeHazard === item;
-
-                return (
-                  <Pressable
-                    key={item}
-                    onPress={() => setActiveHazard(item)}
-                    style={[
-                      styles.hazardButton,
-                      isActive && styles.activeHazardButton,
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        color: isActive
-                          ? safeTheme.secondary_text_color
-                          : "#fff",
-                      }}
-                    >
-                      {item}
-                    </Text>
-                  </Pressable>
-                );
-              },
-            )}
-          </View>
-
-          {/*  Severity Dropdown */}
-          <Text style={styles.label}>Severity</Text>
-          <View style={styles.dropdown}>
-            <Text style={{ color: safeTheme.secondary_text_color }}>
-              Select Severity ▼
-            </Text>
-          </View>
-
-          {/*  Toggle */}
-          <View style={styles.toggleRow}>
-            <Text style={styles.label}>View on Map</Text>
-            <Pressable
-              style={[
-                styles.toggle,
-                isToggleOn && { backgroundColor: safeTheme.primary_button_bg },
-              ]}
-              onPress={() => setIsToggleOn(!isToggleOn)}
-            >
-              <View
-                style={[
-                  styles.toggleCircle,
-                  isToggleOn && { alignSelf: "flex-end" },
-                ]}
-              />
-            </Pressable>
-          </View>
-
-          {/* TABLE HEADER */}
-          <View style={styles.tableHeader}>
-            <Text style={styles.th}>S.No</Text>
-            <Text style={styles.th}>District</Text>
-            <Text style={styles.th}>State</Text>
-            <Text style={styles.th}>Type</Text>
-            <Text style={styles.th}>Severity</Text>
-          </View>
-
-          {/*  TABLE ROW (Sample) */}
-          <View style={styles.tableRow}>
-            <Text style={styles.td}>1</Text>
-            <Text style={styles.td}>Delhi</Text>
-            <Text style={styles.td}>Delhi</Text>
-            <Text style={styles.td}>Rain</Text>
-            <Text style={styles.td}>High</Text>
-          </View>
-
-          {/*  No Data */}
-          <Text style={styles.noData}>No data found for selected filters.</Text>
-        </View>
-      )}
+      )}  
     </View>
   );
 }
 
-const createStyles = (theme) =>
+const createStyles = (safeTheme) =>
   StyleSheet.create({
     section: {
       marginTop: 15,
@@ -273,13 +171,13 @@ const createStyles = (theme) =>
       borderRadius: 0,
       margin: 10,
       alignItems: "center",
-      backgroundColor: theme.min_other_color,
-      textcolor: theme.secondary_text_color,
+      backgroundColor: safeTheme.min_other_color,
+      textcolor: safeTheme.secondary_text_color,
     },
 
     hourTime: {
       fontSize: 12,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     hourIcon: {
@@ -289,12 +187,12 @@ const createStyles = (theme) =>
 
     hourTemp: {
       fontWeight: "bold",
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     hourRain: {
       fontSize: 12,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     accordionTab: {
@@ -303,12 +201,12 @@ const createStyles = (theme) =>
       alignItems: "center",
       paddingVertical: 12,
       paddingHorizontal: 15,
-      backgroundColor: theme.primary_button_bg,
+      backgroundColor: safeTheme.primary_button_bg,
       marginBottom: 1,
     },
 
     activeAccordionTab: {
-      backgroundColor: theme.accordion_active_bg,
+      backgroundColor: safeTheme.accordion_active_bg,
     },
 
     tabTitle: {
@@ -316,19 +214,19 @@ const createStyles = (theme) =>
       textAlign: "center",
       fontSize: 16,
       fontWeight: "600",
-      color: theme.text_on_dark_bg,
+      color: safeTheme.text_on_dark_bg,
     },
 
     arrow: {
       position: "absolute",
       right: 15,
       fontSize: 16,
-      color: theme.text_on_dark_bg,
+      color: safeTheme.text_on_dark_bg,
     },
 
     activeHourCard: {
-      backgroundColor: theme.hover_card_bg,
-      borderColor: theme.primary_border_color,
+      backgroundColor: safeTheme.hover_card_bg,
+      borderColor: safeTheme.primary_border_color,
       borderWidth: 1,
       color: "red",
     },
@@ -338,8 +236,8 @@ const createStyles = (theme) =>
       padding: 12,
       borderRadius: 0,
       margin: 10,
-      backgroundColor: theme.hover_card_bg,
-      borderColor: theme.primary_border_color,
+      backgroundColor: safeTheme.hover_card_bg,
+      borderColor: safeTheme.primary_border_color,
       borderWidth: 1,
     },
 
@@ -347,7 +245,7 @@ const createStyles = (theme) =>
       fontWeight: "600",
       marginBottom: 6,
       textAlign: "center",
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     tempRow: {
@@ -358,12 +256,12 @@ const createStyles = (theme) =>
 
     minTemp: {
       fontSize: 12,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     maxTemp: {
       fontSize: 12,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     dayIcon: {
@@ -376,126 +274,27 @@ const createStyles = (theme) =>
     condition: {
       textAlign: "center",
       fontSize: 12,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     rain: {
       fontSize: 12,
       textAlign: "center",
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
 
     humidity: {
       fontSize: 12,
       textAlign: "center",
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
-
-    hazardCard: {
-      padding: 15,
-      borderRadius: 10,
-      backgroundColor: theme.hover_card_bg,
-      borderColor: theme.primary_border_color,
-      borderWidth: 1,
-    },
-
-    hazardTitle: {
-      fontWeight: "bold",
-      marginBottom: 5,
-      color: theme.secondary_text_color,
-    },
-
-    hazardDescription: {
-      color: theme.secondary_text_color,
-    },
-    label: {
-      marginBottom: 5,
-      color: theme.secondary_text_color,
-      fontWeight: "600",
-    },
-
-    hazardTabs: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      marginBottom: 10,
-    },
-
-    hazardButton: {
-      backgroundColor: theme.primary_button_bg,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderRadius: 20,
-    },
-
-    activeHazardButton: {
-      backgroundColor: theme.accordion_active_bg,
-    },
-
-    dropdown: {
-      borderWidth: 1,
-      borderColor: theme.primary_border_color,
-      padding: 10,
-      borderRadius: 6,
-      marginBottom: 10,
-    },
-
-    toggleRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 10,
-    },
-
-    toggle: {
-      width: 50,
-      height: 25,
-      borderRadius: 20,
-      backgroundColor: "#ccc",
-      justifyContent: "center",
-      padding: 3,
-    },
-
-    toggleCircle: {
-      width: 18,
-      height: 18,
-      borderRadius: 50,
-      backgroundColor: "#fff",
-    },
-
-    tableHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      borderBottomWidth: 1,
-      borderColor: theme.primary_border_color,
-      paddingBottom: 5,
-    },
-
-    tableRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      paddingVertical: 8,
-    },
-
-    th: {
-      flex: 1,
-      fontWeight: "bold",
-      fontSize: 12,
-      color: theme.secondary_text_color,
-    },
-
-    td: {
-      flex: 1,
-      fontSize: 12,
-      color: theme.secondary_text_color,
-    },
-    hour_mm: {
-      color: theme.secondary_text_color,
+     hour_mm: {
+      color: safeTheme.secondary_text_color,
       fontSize: 12,
     },
     noData: {
       textAlign: "center",
       marginTop: 10,
-      color: theme.secondary_text_color,
+      color: safeTheme.secondary_text_color,
     },
   });

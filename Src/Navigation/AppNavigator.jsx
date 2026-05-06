@@ -7,7 +7,7 @@ import TabNavigator from "./TabNavigator.jsx";
 const SHOW_LOGIN_ON_EVERY_OPEN = false;
 
 export default function AppNavigator() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {

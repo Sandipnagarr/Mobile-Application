@@ -144,6 +144,53 @@ const searchLayer = new ol.layer.Vector({
   source: searchSource
 });
 
+function createBoundaryStyle({
+  strokeColor,
+  strokeWidth,
+  fillColor,
+  textColor,
+  fontSize,
+  labelKeys,
+  showAboveZoom = 0
+}) {
+  const styleCache = {};
+
+  return function(feature, resolution) {
+    const zoom = map ? map.getView().getZoomForResolution(resolution) : 99;
+    const label = zoom >= showAboveZoom
+      ? getFeatureLabel(feature, labelKeys)
+      : "";
+
+    if (!styleCache[label]) {
+      styleCache[label] = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: strokeColor,
+          width: strokeWidth
+        }),
+        fill: new ol.style.Fill({
+          color: fillColor
+        }),
+        text: new ol.style.Text({
+          text: label,
+          font: "600 " + fontSize + "px sans-serif",
+          fill: new ol.style.Fill({
+            color: textColor
+          }),
+          stroke: new ol.style.Stroke({
+            color: "#ffffff",
+            width: 3
+          }),
+          overflow: true
+        })
+      });
+    } else {
+      styleCache[label].getText().setText(label);
+    }
+
+    return styleCache[label];
+  };
+}
+
 const indiaLayer = new ol.layer.Vector({
   source: indiaSource,
   style: new ol.style.Style({
@@ -159,175 +206,30 @@ const indiaLayer = new ol.layer.Vector({
 
 const stateLayer = new ol.layer.Vector({
   source: stateSource,
-
-  style: function (feature) {
-
-    const stateName =feature.get("state_ut") ||"STATE";
-    const geom = feature.getGeometry();
-
-    let center;
-
-    if (geom.getType() === "Polygon") {
-
-      center = geom
-        .getInteriorPoint()
-        .getCoordinates();
-
-    } else if (geom.getType() === "MultiPolygon") {
-
-      const polys = geom.getPolygons();
-
-      let largest = polys[0];
-      let maxArea = polys[0].getArea();
-
-      polys.forEach((poly) => {
-        const area = poly.getArea();
-
-        if (area > maxArea) {
-          largest = poly;
-          maxArea = area;
-        }
-      });
-
-      center = largest
-        .getInteriorPoint()
-        .getCoordinates();
-    }
-
-    return [
-
-      // boundary style
-      new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: "rgba(4, 48, 85, 0.85)",
-          width: 2
-        }),
-
-        fill: new ol.style.Fill({
-          color: "rgba(0, 102, 255, 0.06)"
-        })
-      }),
-
-      // label style
-      new ol.style.Style({
-        geometry: new ol.geom.Point(center),
-
-        text: new ol.style.Text({
-          text: stateName,
-
-          font: "bold 14px sans-serif",
-
-          fill: new ol.style.Fill({
-            color: "#000"
-          }),
-
-          stroke: new ol.style.Stroke({
-            color: "#fff",
-            width: 4
-          }),
-
-          overflow: true
-        })
-      })
-    ];
-  }
+  declutter: true,
+  style: createBoundaryStyle({
+    strokeColor: "rgba(4, 48, 85, 0.85)",
+    strokeWidth: 2,
+    fillColor: "rgba(0, 102, 255, 0.06)",
+    textColor: "#043055",
+    fontSize: 12,
+    labelKeys: ["state_name", "state", "NAME_1", "name", "label"],
+    showAboveZoom: 5
+  })
 });
 
-// const districtLayer = new ol.layer.Vector({
-//   source: districtSource,
-//   style: new ol.style.Style({
-//     stroke: new ol.style.Stroke({
-//       color: "rgba(16, 98, 59, 0.55)",
-//       width: 1
-//     }),
-//     fill: new ol.style.Fill({
-//       color: "rgba(16, 98, 59, 0.02)"
-//     })
-//   })
-// });
 const districtLayer = new ol.layer.Vector({
   source: districtSource,
-
-  style: function (feature) {
-  const districtName =
-  feature.get("district") || "District";
-   const zoom = map.getView().getZoom();
-
-    // boundary style
-    const baseStyle = new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: "rgba(16, 98, 59, 0.55)",
-        width: 1
-      }),
-
-      fill: new ol.style.Fill({
-        color: "rgba(16, 98, 59, 0.02)"
-      })
-    });
-
-    // show label only after zoom 8
-    if (zoom <= 8) {
-      return baseStyle;
-    }
-
-    const geom = feature.getGeometry();
-
-    let center;
-
-    if (geom.getType() === "Polygon") {
-
-      center = geom
-        .getInteriorPoint()
-        .getCoordinates();
-
-    } else if (geom.getType() === "MultiPolygon") {
-
-      const polys = geom.getPolygons();
-
-      let largest = polys[0];
-      let maxArea = polys[0].getArea();
-
-      polys.forEach((poly) => {
-        const area = poly.getArea();
-
-        if (area > maxArea) {
-          largest = poly;
-          maxArea = area;
-        }
-      });
-
-      center = largest
-        .getInteriorPoint()
-        .getCoordinates();
-    }
-
-    return [
-
-      baseStyle,
-
-      // label style
-      new ol.style.Style({
-        geometry: new ol.geom.Point(center),
-
-        text: new ol.style.Text({
-          text: districtName,
-
-          font: '600 12px "Segoe UI", sans-serif',
-
-          fill: new ol.style.Fill({
-            color: "#000"
-          }),
-
-          stroke: new ol.style.Stroke({
-            color: "#fff",
-            width: 4
-          }),
-
-          overflow: true
-        })
-      })
-    ];
-  }
+  declutter: true,
+  style: createBoundaryStyle({
+    strokeColor: "rgba(16, 98, 59, 0.55)",
+    strokeWidth: 1,
+    fillColor: "rgba(16, 98, 59, 0.02)",
+    textColor: "#10623b",
+    fontSize: 10,
+    labelKeys: ["district_name", "district", "NAME_2", "name", "label"],
+    showAboveZoom: 7
+  })
 });
 
 const idwLayer = new ol.layer.Image({
@@ -540,6 +442,10 @@ function loadState(circle) {
 
     stateSource.clear();
     stateSource.addFeatures(features);
+    if (features.length > 0) {
+      const { geometry, ...stateProps } = features[0].getProperties();
+      console.log("STATE FEATURE PROPS:", JSON.stringify(stateProps));
+    }
     fitSource(stateSource);
   })
   .catch((error) => {
@@ -571,6 +477,10 @@ function loadDistrict(circle = "All India") {
 
     districtSource.clear();
     districtSource.addFeatures(features);
+    if (features.length > 0) {
+      const { geometry, ...districtProps } = features[0].getProperties();
+      console.log("DISTRICT FEATURE PROPS:", JSON.stringify(districtProps));
+    }
   })
   .catch((error) => {
     console.log("District API ERROR", error);
@@ -907,7 +817,6 @@ function getPopupTitle(feature) {
     properties.NAME_1,
     properties.label
   ];
-  console.log("properties name",titleCandidates);
 
   return (
     titleCandidates.find(
@@ -951,23 +860,6 @@ function getFeatureLabel(feature, keys) {
 }
 
 function showPopup(coordinate, feature, weather) {
-console.log(
-  "POPUP FEATURE:",
-  JSON.stringify(
-    feature?.getProperties(),
-    null,
-    2
-  )
-);
-console.log(
-  "POPUP WEATHER:",
-  JSON.stringify(
-    weather,
-    null,
-    2
-  )
-);
-
   if (!popupContainer || !popupContent || !popupOverlay) return;
 
   if (!weather?.current || !weather?.forecast?.forecastday?.[0]?.hour) {
@@ -983,9 +875,16 @@ console.log(
   );
   const nowHour = Number.isFinite(localHour) ? localHour : new Date().getHours();
   const currentHour = hours[nowHour] || hours[0] || {};
-  const locationName =weather.location?.name || getPopupTitle(feature);
-  const stateName = weather.location?.region||"N/A";
-  const districtName =feature?.get("district");
+  const locationName =
+    weather.location?.name || getPopupTitle(feature);
+  const stateName =
+    weather.location?.region ||
+    getFeatureLabel(feature, ["state_name", "state", "NAME_1"]) ||
+    "N/A";
+  const districtName =
+    getFeatureLabel(feature, ["district_name", "district", "name", "NAME_2"]) ||
+    weather.location?.name ||
+    "N/A";
   const iconUrl = current?.condition?.icon ? "https:" + current.condition.icon : "";
   const rainChance = Number.isFinite(Number(currentHour.chance_of_rain))
     ? currentHour.chance_of_rain
@@ -1228,8 +1127,15 @@ window.onload = function () {
 }
 
 export default function HomeScreen() {
-  const { setData, location, setLocation, setLocationName, data, setCircle } =
-    useContext(WeatherContext);
+  const {
+    setData,
+    location,
+    setLocation,
+    setLocationName,
+    data,
+    setCircle,
+    circle,
+  } = useContext(WeatherContext);
   const [token, setToken] = useState(null);
   const [webViewSource, setWebViewSource] = useState(null);
   const webViewRef = useRef(null);
@@ -1294,12 +1200,11 @@ export default function HomeScreen() {
       if (msg.type === "LOCATION_CHANGE") {
         setLocation(msg.coords);
         setLocationName(msg.name);
-        setCircle(msg.circle); 
+        setCircle(msg.circle);
       }
-          if (msg.type === "IDW_LOADED") {
-            setIdwLoading(false); 
+      if (msg.type === "IDW_LOADED") {
+        setIdwLoading(false);
       }
-   
     } catch (error) {
       console.log("WEBVIEW:", event.nativeEvent.data);
     }
@@ -1334,7 +1239,7 @@ export default function HomeScreen() {
           style={{ height: 600 }}
         />
         <ForecastCards />
-        <Hazard  />
+        <Hazard />
       </ScrollView>
     </SafeAreaView>
   );
