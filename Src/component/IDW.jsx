@@ -1,15 +1,8 @@
-import React from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
-import { useContext,useState } from "react";
+import React, { useContext } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { WeatherContext } from "../context/WeatherContext";
 import { defaultTheme } from "../theme";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 const IDW_MESSAGE_TYPES = {
   rainfall: "RAIN_IDW",
@@ -19,86 +12,46 @@ const IDW_MESSAGE_TYPES = {
   temperature: "TEMPERATURE_IDW",
 };
 
-export default function IDW({ webViewRef, setLoading }) {
+const IDW_OPTIONS = [
+  { key: "rainfall", label: "Rainfall", icon: "cloud-rain" },
+  { key: "wind", label: "Wind", icon: "wind" },
+  { key: "humidity", label: "Humidity", icon: "tint" },
+  { key: "visibility", label: "Visibility", icon: "smog" },
+  { key: "temperature", label: "Temperature", icon: "temperature-high" },
+];
+
+export default function IDW({ webViewRef, setLoading, activeType = null }) {
   const { theme } = useContext(WeatherContext);
   const safeTheme = theme || defaultTheme;
   const styles = createStyles(safeTheme);
-  const [activeType, setActiveType] = useState(null);
-  // console.log("IDW RENDERED WITH THEME:", theme);
 
   const handlePress = (type) => {
     if (!webViewRef.current) return;
+
     const messageType = IDW_MESSAGE_TYPES[type];
     if (!messageType) return;
-    setActiveType(type);
-    setLoading(true);
 
+    setLoading(true);
     webViewRef.current.postMessage(JSON.stringify({ type: messageType }));
   };
+
   return (
-    
-
-  <View>
-
-    {/* YOUR EXISTING CODE (unchanged) */}
     <View style={styles.container}>
-
-      <Pressable
-        style={[
-          styles.button,
-          activeType === "rainfall" && styles.activeButton,
-        ]}
-        onPress={() => handlePress("rainfall")}
-      >
-        <FontAwesome5 name="cloud-rain" size={14} color="white" />
-        <Text style={styles.text}> Rainfall</Text>
-      </Pressable>
-
-      <Pressable
-        style={[styles.button, activeType === "wind" && styles.activeButton]}
-        onPress={() => handlePress("wind")}
-      >
-        <FontAwesome5 name="wind" size={14} color="white" />
-        <Text style={styles.text}> Wind</Text>
-      </Pressable>
-
-      <Pressable
-        style={[
-          styles.button,
-          activeType === "humidity" && styles.activeButton,
-        ]}
-        onPress={() => handlePress("humidity")}
-      >
-        <FontAwesome5 name="tint" size={14} color="white" />
-        <Text style={styles.text}> Humidity</Text>
-      </Pressable>
-
-      <Pressable
-        style={[
-          styles.button,
-          activeType === "visibility" && styles.activeButton,
-        ]}
-        onPress={() => handlePress("visibility")}
-      >
-        <FontAwesome5 name="smog" size={14} color="white" />
-        <Text style={styles.text}> Visibility</Text>
-      </Pressable>
-
-      <Pressable
-        style={[
-          styles.button,
-          activeType === "temperature" && styles.activeButton,
-        ]}
-        onPress={() => handlePress("temperature")}
-      >
-        <FontAwesome5 name="temperature-high" size={14} color="white" />
-        <Text style={styles.text}> Temperature</Text>
-      </Pressable>
-
+      {IDW_OPTIONS.map((option) => (
+        <Pressable
+          key={option.key}
+          style={[
+            styles.button,
+            activeType === option.key && styles.activeButton,
+          ]}
+          onPress={() => handlePress(option.key)}
+        >
+          <FontAwesome5 name={option.icon} size={14} color="#fff" />
+          <Text style={styles.text}> {option.label}</Text>
+        </Pressable>
+      ))}
     </View>
-  </View>
-);
-
+  );
 }
 
 const createStyles = (theme) =>
@@ -117,38 +70,8 @@ const createStyles = (theme) =>
       alignItems: "center",
     },
     text: {
-      color: "white",
+      color: "#fff",
       fontWeight: "bold",
-      fontSize: 11,
-    },
-    text: {
-      color: "white",
-      fontWeight: "bold",
-      fontSize: 11,
-    },
-    activeButton: {
-      backgroundColor: theme.secondary_button_bg || "#381405",
-eight: "bold",
-      fontSize: 11,
-    },
-    activeButton: {
-      backgroundColor: theme.secondary_button_bg || "#381405",
-eight: "bold",
-      fontSize: 11,
-    },
-    activeButton: {
-      backgroundColor: theme.secondary_button_bg || "#381405",
-eight: "bold",
-      fontSize: 11,
-    },
-    activeButton: {
-      backgroundColor: theme.secondary_button_bg || "#381405",
-eight: "bold",
-      fontSize: 11,
-    },
-    activeButton: {
-      backgroundColor: theme.secondary_button_bg || "#381405",
-eight: "bold",
       fontSize: 11,
     },
     activeButton: {

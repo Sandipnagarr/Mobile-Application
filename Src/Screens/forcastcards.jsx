@@ -1,5 +1,5 @@
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef,useEffect } from "react";
 import {
   View,
   Text,
@@ -15,45 +15,63 @@ import { FontAwesome5 } from "@expo/vector-icons";
 export default function ForecastCards() {
   const { data, theme } = useContext(WeatherContext);
   // const styles = createStyles(theme);
-    const safeTheme = theme || defaultTheme;
-    const styles = createStyles(safeTheme);
-
+  const safeTheme = theme || defaultTheme;
+  const styles = createStyles(safeTheme);
   const [showHourly, setShowHourly] = useState(true);
   const [showDaily, setShowDaily] = useState(false);
+  const scrollRef = useRef(null);
 
-if (!data) {
-  return <Text>Loading forecast...</Text>;
-}
+  // if (!data) {
+  //   return <Text>Loading forecast...</Text>;
+  // }
 
-// ---------- SIMPLE STRUCTURE ----------
-const forecastDays = data?.forecast?.forecastday || [];
+  // ---------- SIMPLE STRUCTURE ----------
+  const forecastDays = data?.forecast?.forecastday || [];
 
-// DAILY
-const dayForecastList = forecastDays.map((day) => ({
-  date: day.date,
-  temp_min: day.day.mintemp_c,
-  temp_max: day.day.maxtemp_c,
-  icon: `https:${day.day.condition.icon}`,
-  condition_text: day.day.condition.text,
-  chance_of_rain: day.day.daily_chance_of_rain,
-  humidity: day.day.avghumidity,
-  rain_mm: day.day.totalprecip_mm || day.day.precip_mm || 0,
-}));
+  // DAILY
+  const dayForecastList = forecastDays.map((day) => ({
+    date: day.date,
+    temp_min: day.day.mintemp_c,
+    temp_max: day.day.maxtemp_c,
+    icon: `https:${day.day.condition.icon}`,
+    condition_text: day.day.condition.text,
+    chance_of_rain: day.day.daily_chance_of_rain,
+    humidity: day.day.avghumidity,
+    rain_mm: day.day.totalprecip_mm || day.day.precip_mm || 0,
+  }));
 
-// HOURLY (today only)
-const hourlyData = (forecastDays[0]?.hour || []).map((hour) => ({
-  time: hour.time.split(" ")[1],
-  temp: hour.temp_c,
-  icon: `https:${hour.condition.icon}`,
-  chance_of_rain: hour.chance_of_rain,
-  rain_mm: hour.precip_mm || 0, //  
-  wind: hour.wind_kph,
-}));
+  // HOURLY (today only)
+  const hourlyData = (forecastDays[0]?.hour || []).map((hour) => ({
+    time: hour.time.split(" ")[1],
+    temp: hour.temp_c,
+    icon: `https:${hour.condition.icon}`,
+    chance_of_rain: hour.chance_of_rain,
+    rain_mm: hour.precip_mm || 0, //
+    wind: hour.wind_kph,
+  }));
+  const currentHour = new Date().getHours();
 
-// CURRENT HOUR
-const currentHour = new Date().getHours();
+  useEffect(() => {
+    const currentIndex = hourlyData.findIndex((hour) => {
+      const hourValue = Number(hour.time.split(":")[0]);
 
-// HELPER
+      return hourValue === currentHour;
+    });
+
+    if (currentIndex !== -1) {
+      scrollRef.current?.scrollTo({
+        x: currentIndex * 160,
+        animated: true,
+      });
+    }
+  }, [hourlyData]);
+
+  // NOW CHECK DATA
+  if (!data) {
+    return <Text>Loading forecast...</Text>;
+  }
+
+  // HELPER
   return (
     <View style={styles.section}>
       {/* HOURLY TAB */}
@@ -73,7 +91,9 @@ const currentHour = new Date().getHours();
       </Pressable>
 
       {showHourly && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView horizontal
+          ref={scrollRef}
+          showsHorizontalScrollIndicator={false}>
           {hourlyData.map((hour, i) => {
             const hourValue = Number(hour.time.split(":")[0]);
             const isCurrent = hourValue === currentHour;
@@ -93,14 +113,20 @@ const currentHour = new Date().getHours();
                 <Text style={styles.hourTemp}>{hour.temp}°C</Text>
 
                 {/* RAIN % */}
-                <Text style={styles.hourRain}>🌧 {hour.chance_of_rain}% Rain probility</Text>
+                <Text style={styles.hourRain}>
+                  🌧 {hour.chance_of_rain}% Rain probility
+                </Text>
 
                 {/* RAIN MM (FIXED) */}
                 <Text style={styles.hour_mm}>🌧 {hour.rain_mm} mm</Text>
 
                 {/* WIND (NEW like Angular) */}
                 <Text style={styles.hour_mm}>
-               <FontAwesome5 name="wind" size={14} color={safeTheme.secondary_text_color}/>
+                  <FontAwesome5
+                    name="wind"
+                    size={14}
+                    color={safeTheme.secondary_text_color}
+                  />
                   {hour.wind} km/h
                 </Text>
               </View>
@@ -154,7 +180,7 @@ const currentHour = new Date().getHours();
             </View>
           ))}
         </ScrollView>
-      )}  
+      )}
     </View>
   );
 }
@@ -184,7 +210,17 @@ const createStyles = (safeTheme) =>
       width: 40,
       height: 40,
     },
-
+    /**
+     
+    Added a n button on the map and created a checkbox list to show all active map layers 
+    Connected the layer list with the map so users can turn layers on or off by checkbox 
+    including weather IDW layers dynamically add in the layer list with check box
+    Implemented automatic horizontal ScrollView positioning to focus the current hourly forecast card
+    Added a legend with a gradient on the map to identify the severity of the IDW affected areas.
+    make the legend label value  dynamic based on the idw button click  
+    Updated the IDW layer controls so the selected weather layer stays in sync with the map and the active button highlight updates correctly.
+    
+    */
     hourTemp: {
       fontWeight: "bold",
       color: safeTheme.secondary_text_color,
@@ -288,7 +324,7 @@ const createStyles = (safeTheme) =>
       textAlign: "center",
       color: safeTheme.secondary_text_color,
     },
-     hour_mm: {
+    hour_mm: {
       color: safeTheme.secondary_text_color,
       fontSize: 12,
     },

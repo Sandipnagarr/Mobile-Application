@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, ScrollView, View, Pressable } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,6 +22,14 @@ const injectedConsoleBridge = `
   true;
 `;
 
+  const IDW_ACTIVE_BUTTONS = {
+  RAIN_IDW: "rainfall",
+  WIND_IDW: "wind",
+  HUMIDITY_IDW: "humidity",
+  VISIBILITY_IDW: "visibility",
+  TEMPERATURE_IDW: "temperature",
+};
+
 function buildMapHtml(token) {
   return `
 <!DOCTYPE html>
@@ -39,11 +47,17 @@ function buildMapHtml(token) {
 html, body { margin: 0; padding: 0; height: 100%; }
 #map { width: 100%; height: 100%; }
 
-.dropdown-container {
+.map-controls {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dropdown-container {
   background: rgba(255, 255, 255, 0.96);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
@@ -56,6 +70,114 @@ html, body { margin: 0; padding: 0; height: 100%; }
   outline: none;
   background: transparent;
   padding: 6px;
+}
+
+.layer-control {
+  position: relative;
+}
+
+.layer-button {
+  width: 100%;
+  border: 0;
+  outline: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  padding: 10px 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.layers-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 100px;
+  max-width: 100px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  padding: 12px;
+}
+
+.layers-title {
+  font: 600 13px/1.2 "Segoe UI", sans-serif;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+.layers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 12px/1.3 "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+.layer-item input {
+  margin: 0;
+}
+
+.layer-empty {
+  font: 500 12px/1.3 "Segoe UI", sans-serif;
+  color: #64748b;
+}
+
+
+.legend-container {
+  position: absolute;
+  
+
+  bottom: 20px;
+  left: 10px;
+
+  z-index: 999;
+
+  background: rgba(255,255,255,0.95);
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  min-width: 140px;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.label-gradient {
+  display: flex;
+
+  justify-content: space-between;
+
+  font-size: 12px;
+
+  font-weight: bold;
+
+  margin-bottom: 6px;
+}
+
+.color-gradient {
+
+  height: 14px;
+
+  border-radius: 6px;
+
+  background: linear-gradient(
+    to left,
+    blue,
+    cyan,
+    lime,
+    yellow,
+    orange,
+    red
+  );
 }
 </style>
 </head>
@@ -80,13 +202,35 @@ html, body { margin: 0; padding: 0; height: 100%; }
   <div id="popup-content" style="padding:8px;"></div>
 </div>
 
-<div class="dropdown-container">
-  <select id="stateSelect" onchange="onStateChange()">
-    <option>Loading...</option>
-  </select>
+<div class="map-controls">
+  <div class="dropdown-container">
+    <select id="stateSelect" onchange="onStateChange()">
+      <option>Loading...</option>
+    </select>
+  </div>
+
+  <div class="layer-control">
+    <button id="layerToggleButton" class="layer-button" type="button">
+      Layers
+    </button>
+
+    <div id="layersPanel" class="layers-panel" style="display:none;">
+      <div class="layers-title">Layers</div>
+      <div id="layersList" class="layers-list"></div>
+    </div>
+  </div>
 </div>
 
 <div id="map"></div>
+<div
+  id="legendContainer"
+  class="legend-container"
+  style="display:none;"
+>
+  <div class="label-gradient"></div>
+  <div class="color-gradient"></div>
+
+</div>
 
 <script>
 const TOKEN = "${token}";
@@ -98,6 +242,10 @@ let popupContainer;
 let popupContent;
 let popupOverlay;
 let popupWeatherRequestId = 0;
+let layerToggleButton;
+let layersPanel;
+let layersList;
+let isLayerPanelOpen = false;
 // ----------------------------
 
 const searchSource = new ol.source.Vector();
@@ -137,8 +285,16 @@ const WEATHER_IDW_CONFIG = {
   }
 };
 let activeWeatherIDWType = null;
+let lastWeatherIDWType = null;
 let processedWeatherGrid = null;
 let processedWeatherHourKey = null;
+const discoveredLayerKeys = {
+  india: true,
+  state: true,
+  district: true,
+  search: false,
+  weatherIdw: false
+};
 
 const searchLayer = new ol.layer.Vector({
   source: searchSource
@@ -249,8 +405,7 @@ const districtLayer = new ol.layer.Vector({
   source: districtSource,
 
   style: function (feature) {
-  const districtName =
-  feature.get("district") || "District";
+  const districtName=feature.get("district") || "District";
    const zoom = map.getView().getZoom();
 
     // boundary style
@@ -347,6 +502,130 @@ function postToReactNative(payload) {
 
 function hasValidExtent(extent) {
   return Array.isArray(extent) && extent.length === 4 && extent.every(Number.isFinite);
+}
+
+function getWeatherIDWLabel() {
+  const weatherType = activeWeatherIDWType || lastWeatherIDWType;
+  const idwConfig = weatherType
+    ? WEATHER_IDW_CONFIG[weatherType] || WEATHER_IDW_CONFIG.RAIN_IDW
+    : null;
+
+  return idwConfig ? idwConfig.label + " IDW" : "Weather IDW";
+}
+
+function markLayerDiscovered(key) {
+  discoveredLayerKeys[key] = true;
+}
+
+function notifyIDWStateChange() {
+  postToReactNative({
+    type: "IDW_STATE_CHANGE",
+    activeType: activeWeatherIDWType,
+    visible: idwLayer.getVisible()
+  });
+}
+
+function setLayerPanelOpen(nextOpen) {
+  isLayerPanelOpen = nextOpen;
+
+  if (!layersPanel || !layerToggleButton) return;
+
+  layersPanel.style.display = nextOpen ? "block" : "none";
+  layerToggleButton.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+}
+
+function getTrackedLayers() {
+  return [
+    {
+      key: "india",
+      label: "India Boundary",
+      active: indiaLayer.getVisible() && indiaSource.getFeatures().length > 0,
+      setActive: (nextVisible) => {
+        indiaLayer.setVisible(nextVisible);
+        map.render();
+      }
+    },
+    {
+      key: "state",
+      label: "State Boundary",
+      active: stateLayer.getVisible() && stateSource.getFeatures().length > 0,
+      setActive: (nextVisible) => {
+        stateLayer.setVisible(nextVisible);
+        map.render();
+      }
+    },
+    {
+      key: "district",
+      label: "District Boundary",
+      active: districtLayer.getVisible() && districtSource.getFeatures().length > 0,
+      setActive: (nextVisible) => {
+        districtLayer.setVisible(nextVisible);
+        map.render();
+      }
+    },
+    {
+      key: "search",
+      label: "Search Marker",
+      active: searchLayer.getVisible() && searchSource.getFeatures().length > 0,
+      setActive: (nextVisible) => {
+        searchLayer.setVisible(nextVisible);
+        if (!nextVisible) {
+          hidePopup();
+        }
+        map.render();
+      }
+    },
+    {
+      key: "weatherIdw",
+      label: getWeatherIDWLabel(),
+      active: idwLayer.getVisible() && !!activeWeatherIDWType,
+      setActive: (nextVisible) => {
+        if (!nextVisible) {
+          deactivateWeatherIDW();
+          return;
+        }
+
+        const weatherType = activeWeatherIDWType || lastWeatherIDWType;
+        if (!weatherType) return;
+
+        activateWeatherIDW(weatherType);
+      }
+    }
+  ];
+}
+
+function renderLayerList() {
+  if (!layersList) return;
+
+  const trackedLayers = getTrackedLayers().filter((layerItem) => discoveredLayerKeys[layerItem.key]);
+
+  if (!trackedLayers.length) {
+    layersList.innerHTML = "<div class='layer-empty'>No layers available</div>";
+    return;
+  }
+
+  layersList.innerHTML = trackedLayers
+    .map((layerItem) => (
+      "<label class='layer-item'>"
+        + "<input type='checkbox' data-layer-key='" + layerItem.key + "'"
+        + (layerItem.active ? " checked" : "")
+        + " />"
+        + "<span>" + layerItem.label + "</span>"
+      + "</label>"
+    ))
+    .join("");
+
+  layersList.querySelectorAll("input[data-layer-key]").forEach((input) => {
+    input.addEventListener("change", (event) => {
+      const layerKey = event.target.getAttribute("data-layer-key");
+      const layerConfig = getTrackedLayers().find((item) => item.key === layerKey);
+
+      if (!layerConfig) return;
+
+      layerConfig.setActive(event.target.checked);
+      renderLayerList();
+    });
+  });
 }
 
 function fitSource(source) {
@@ -501,6 +780,7 @@ function loadBoundary() {
 
     indiaSource.clear();
     indiaSource.addFeatures(features);
+    markLayerDiscovered("india");
 
     const extent = indiaSource.getExtent();
     if (hasValidExtent(extent)) {
@@ -510,6 +790,7 @@ function loadBoundary() {
 
     idwLayer.changed();
     map.render();
+    renderLayerList();
   })
   .catch((error) => {
     console.log("Boundary API ERROR", error);
@@ -540,7 +821,9 @@ function loadState(circle) {
 
     stateSource.clear();
     stateSource.addFeatures(features);
+    markLayerDiscovered("state");
     fitSource(stateSource);
+    renderLayerList();
   })
   .catch((error) => {
     console.log("State API ERROR", error);
@@ -571,6 +854,8 @@ function loadDistrict(circle = "All India") {
 
     districtSource.clear();
     districtSource.addFeatures(features);
+    markLayerDiscovered("district");
+    renderLayerList();
   })
   .catch((error) => {
     console.log("District API ERROR", error);
@@ -769,7 +1054,6 @@ function loadWeatherIDW(type = "RAIN_IDW") {
 
   if (processedWeatherGrid && processedWeatherHourKey === selectedDate) {
     applyProcessedData(processedWeatherGrid, type);
-      postToReactNative({ type: "IDW_LOADED" });   // ------------------------------ HERE
     console.log(
       idwConfig.label + " IDW features:",
       getSourceForType(type).getFeatures().length
@@ -811,8 +1095,6 @@ function loadWeatherIDW(type = "RAIN_IDW") {
     processedWeatherHourKey = selectedDate;
     applyProcessedData(processedWeatherGrid, type);
 
-  
-
     return processedWeatherGrid;
   })
   .catch((error) => {
@@ -833,20 +1115,160 @@ function getSourceForType(type) {
   return sourceMap[idwConfig.key] || vectorSourceRain;
 }
 
+function activateWeatherIDW(type) {
+
+  const normalizedType =
+    WEATHER_IDW_CONFIG[type]
+      ? type
+      : "RAIN_IDW";
+
+  activeWeatherIDWType = normalizedType;
+  lastWeatherIDWType = normalizedType;
+
+  markLayerDiscovered("weatherIdw");
+
+  idwLayer.setVisible(true);
+
+  notifyIDWStateChange();
+
+  renderLayerList();
+
+  map.render();
+
+  return loadWeatherIDW(normalizedType)
+
+    .finally(() => {
+
+      const legendContainer =
+        document.getElementById("legendContainer");
+
+      const labelContainer =
+        document.querySelector(".label-gradient");
+
+      legendContainer.style.display = "block";
+
+      // RAIN
+      if (normalizedType === "RAIN_IDW") {
+
+        labelContainer.innerHTML =
+
+          "<span>100%</span>" +
+          "<span>75%</span>" +
+          "<span>50%</span>" +
+          "<span>25%</span>" +
+          "<span>0%</span>";
+      }
+
+      // TEMPERATURE
+      else if (
+        normalizedType === "TEMPERATURE_IDW"
+      ) {
+
+        const tempMeta =
+          processedWeatherGrid?.meta?.temp;
+
+        labelContainer.innerHTML =
+
+          "<span>" +
+          (tempMeta?.max ?? 0) +
+          " °C</span>" +
+
+          "<span>" +
+          (tempMeta?.min ?? 0) +
+          " °C</span>";
+      }
+
+      // WIND
+      else if (
+        normalizedType === "WIND_IDW"
+      ) {
+
+        const windMeta =
+          processedWeatherGrid?.meta?.wind;
+
+        labelContainer.innerHTML =
+
+          "<span>" +
+          (windMeta?.max ?? 0) +
+          " kph</span>" +
+
+          "<span>" +
+          (windMeta?.min ?? 0) +
+          " kph</span>";
+      }
+
+      // HUMIDITY
+      else if (
+        normalizedType === "HUMIDITY_IDW"
+      ) {
+
+        const humidityMeta =
+          processedWeatherGrid?.meta?.humidity;
+
+        labelContainer.innerHTML =
+
+          "<span>" +
+          (humidityMeta?.max ?? 0) +
+          " %</span>" +
+
+          "<span>" +
+          (humidityMeta?.min ?? 0) +
+          " %</span>";
+      }
+
+      // VISIBILITY / FOG
+      else if (
+        normalizedType === "VISIBILITY_IDW"
+      ) {
+
+        const fogMeta =
+          processedWeatherGrid?.meta?.fog;
+
+        // reverse like Angular
+        labelContainer.innerHTML =
+
+          "<span>" +
+          (fogMeta?.min ?? 0) +
+          " Km</span>" +
+
+          "<span>" +
+          (fogMeta?.max ?? 0) +
+          " Km</span>";
+      }
+
+      notifyIDWStateChange();
+
+      renderLayerList();
+
+      postToReactNative({
+        type: "IDW_LOADED"
+      });
+
+    });
+
+}
+
+function deactivateWeatherIDW() {
+  activeWeatherIDWType = null;
+  idwLayer.setVisible(false);
+  document.getElementById("legendContainer").style.display = "none";
+  notifyIDWStateChange();
+  renderLayerList();
+  map.render();
+  postToReactNative({ type: "IDW_LOADED" });
+}
+
 function toggleWeatherIDW(type) {
+  const normalizedType = WEATHER_IDW_CONFIG[type] ? type : "RAIN_IDW";
   const isVisible = idwLayer.getVisible();
-  const isSameType = activeWeatherIDWType === type;
+  const isSameType = activeWeatherIDWType === normalizedType;
 
   if (isVisible && isSameType) {
-    idwLayer.setVisible(false);
-    activeWeatherIDWType = null;
-    map.render();
+    deactivateWeatherIDW();
     return;
   }
 
-  activeWeatherIDWType = type;
-  idwLayer.setVisible(true);
-  loadWeatherIDW(type);
+  activateWeatherIDW(normalizedType);
 }
 
 function showSearchLocation(lon, lat) {
@@ -856,6 +1278,7 @@ function showSearchLocation(lon, lat) {
 
   hidePopup(); //----popup------
   searchSource.clear();
+  searchLayer.setVisible(true);
 
   const marker = new ol.Feature({
     geometry: new ol.geom.Point(coords)
@@ -872,6 +1295,8 @@ function showSearchLocation(lon, lat) {
   );
 
   searchSource.addFeature(marker);
+  markLayerDiscovered("search");
+  renderLayerList();
 
   map.getView().animate({
     center: coords,
@@ -985,7 +1410,7 @@ console.log(
   const currentHour = hours[nowHour] || hours[0] || {};
   const locationName =weather.location?.name || getPopupTitle(feature);
   const stateName = weather.location?.region||"N/A";
-  const districtName =feature?.get("district");
+  const districtName =feature?.get("district")||weather.location?.name
   const iconUrl = current?.condition?.icon ? "https:" + current.condition.icon : "";
   const rainChance = Number.isFinite(Number(currentHour.chance_of_rain))
     ? currentHour.chance_of_rain
@@ -1118,6 +1543,7 @@ function onStateChange() {
   hidePopup();//------popup------------------------------------------
   stateSource.clear();
   districtSource.clear();
+  renderLayerList();
 
   if (coords) {
     postToReactNative({
@@ -1176,6 +1602,12 @@ window.onload = function () {
         source: new ol.source.OSM()
       }),
       idwLayer,
+
+
+
+
+
+      
       indiaLayer,
       districtLayer,
       stateLayer,
@@ -1186,6 +1618,34 @@ window.onload = function () {
       zoom: 5
     })
   });
+  layerToggleButton = document.getElementById("layerToggleButton");
+  layersPanel = document.getElementById("layersPanel");
+  layersList = document.getElementById("layersList");
+
+  if (layerToggleButton) {
+    layerToggleButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const nextOpen = !isLayerPanelOpen;
+      setLayerPanelOpen(nextOpen);
+
+      if (nextOpen) {
+        renderLayerList();
+      }
+    });
+  }
+
+  if (layersPanel) {
+    layersPanel.addEventListener("click", function (event) {
+      event.stopPropagation();
+    });
+  }
+
+  document.addEventListener("click", function () {
+    if (isLayerPanelOpen) {
+      setLayerPanelOpen(false);
+    }
+  });
+  renderLayerList();
 // -------------popup container----------------------
   popupContainer = document.getElementById("popup");
   popupContent = document.getElementById("popup-content");
@@ -1234,6 +1694,7 @@ export default function HomeScreen() {
   const [webViewSource, setWebViewSource] = useState(null);
   const webViewRef = useRef(null);
   const [idwLoading, setIdwLoading] = useState(false);
+  const [activeIdwType, setActiveIdwType] = useState(null);
   useEffect(() => {
     AsyncStorage.getItem("token").then(setToken);
   }, []);
@@ -1296,8 +1757,11 @@ export default function HomeScreen() {
         setLocationName(msg.name);
         setCircle(msg.circle); 
       }
-          if (msg.type === "IDW_LOADED") {
-            setIdwLoading(false); 
+      if (msg.type === "IDW_STATE_CHANGE") {
+        setActiveIdwType(IDW_ACTIVE_BUTTONS[msg.activeType] || null);
+      }
+      if (msg.type === "IDW_LOADED") {
+        setIdwLoading(false); 
       }
    
     } catch (error) {
@@ -1320,6 +1784,7 @@ export default function HomeScreen() {
         <SearchBar webViewRef={webViewRef} />
         <IDW
           webViewRef={webViewRef}
+          activeType={activeIdwType}
           loading={idwLoading}
           setLoading={setIdwLoading}
         />

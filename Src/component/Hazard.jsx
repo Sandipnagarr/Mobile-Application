@@ -176,14 +176,13 @@ export default function Hazard() {
   // ================================
   useEffect(() => {
     fetchHazardTypes();
+  }, [circle]);
+
+  useEffect(() => {
+    if (!activeHazard) return;
+
     fetchSeverity();
-  }, [activeHazard,circle]);
-
-  // useEffect(() => {
-  //   if (!activeHazard) return;
-
-  //   fetchSeverity();
-  // }, [activeHazard, circle]);
+  }, [activeHazard, circle]);
 
   useEffect(() => {
     if (!activeHazard) return;
@@ -307,13 +306,9 @@ export default function Hazard() {
               {/* HEADER */}
               <View style={styles.tableHeader}>
                 <Text style={styles.th}>S.No</Text>
-
                 <Text style={styles.th}>District</Text>
-
                 <Text style={styles.th}>State</Text>
-
                 <Text style={styles.th}>Type</Text>
-
                 <Text style={styles.th}>Severity</Text>
                 <Text style={styles.th}>Effective</Text>
                 <Text style={styles.th}>Expires</Text>
@@ -333,13 +328,9 @@ export default function Hazard() {
                   ]}
                 >
                   <Text style={styles.td}>{index + 1}</Text>
-
                   <Text style={styles.td}>{item.district}</Text>
-
                   <Text style={styles.td}>{item.state}</Text>
-
                   <Text style={styles.td}>{item.event}</Text>
-
                   <Text style={styles.td}>{item.severity}</Text>
                   <Text style={styles.td}>{item.effective}</Text>
                   <Text style={styles.td}>{item.expires}</Text>
@@ -360,19 +351,7 @@ export default function Hazard() {
     </View>
   );
 }
-/*1. Built and designed dynamic React Native hazard table. - 50%
 
-2. Bound NDMA disaster API data into the table with dynamic row background colors based on severity. - 80%
-
-3. Added state labels on the map to display state names. - 90%
-
-4. Added district labels on the map to display district names. - 50%
-
-5. Designed and rendered state and district labels inside polygon centers. - 70%
-
-6. Tried fixing district name retrieval from map label click issue (undefined problem). - 65%
-
-7. Integrated logout API and removed user credentials from AsyncStorage during logout. - 100% */
 
 const createStyles = (safeTheme) =>
   StyleSheet.create({

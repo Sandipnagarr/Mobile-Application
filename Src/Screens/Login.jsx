@@ -114,51 +114,6 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#0f172a",
-//     justifyContent: "center",
-//     alignItems: "center",
-//   },
-//   card: {
-//     width: "90%",
-//     maxWidth: 400,
-//     backgroundColor: "#ffffff",
-//     padding: 25,
-//     borderRadius: 16,
-//     elevation: 8,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.2,
-//     shadowRadius: 10,
-//   },
-//   title: {
-//     fontSize: 26,
-//     fontWeight: "bold",
-//     textAlign: "center",
-//     marginBottom: 25,
-//     color: "#111",
-//   },
-//   input: {
-//     backgroundColor: "#f1f5f9",
-//     padding: 14,
-//     borderRadius: 10,
-//     marginBottom: 15,
-//   },
-//   button: {
-//     backgroundColor: "#16a34a",
-//     padding: 16,
-//     borderRadius: 10,
-//     marginTop: 10,
-//   },
-//   buttonText: {
-//     textAlign: "center",
-//     color: "#fff",
-//     fontWeight: "bold",
-//     fontSize: 16,
-//   },
-// });
 const createStyles = (theme) =>
   StyleSheet.create({
     container: {
