@@ -6,7 +6,6 @@ import {
   Image,
   Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect, React } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -176,7 +175,7 @@ export default function TodayWeather() {
   );
 }
 
-const createStyles = (theme) =>
+const createStyles = (safeTheme) =>
   StyleSheet.create({
     /*  SAFE AREA ROOT */
     safe: {
@@ -282,7 +281,7 @@ const createStyles = (theme) =>
 
     card: {
       width: "45%",
-      backgroundColor: theme.primary_icon_color,
+      backgroundColor: safeTheme.primary_icon_color,
       borderRadius: 12,
       padding: 5,
       marginBottom: 10,

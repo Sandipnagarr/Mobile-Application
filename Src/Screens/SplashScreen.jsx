@@ -13,7 +13,7 @@ const SplashIntro = ({ onFinish }) => {
 
     const timer = setTimeout(() => {
       onFinish();
-    }, 5000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [onFinish, scale]);

@@ -1,10 +1,25 @@
-import React from "react";
-import { View, Text } from "react-native";
-import HomeScreen from "./HomeScreen";
+import React, { useRef } from "react";
+import { ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Map from "../component/Map";
+import IDW from "../component/IDW";
+import SearchBar from "../component/searchbar";
+import ForecastCards from "./forcastcards";
+import TodayWeather from "../component/TodayWeather";
 export default function DistrictScreen() {
+  const webViewRef = useRef(null);
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <HomeScreen/>
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView>
+        <TodayWeather />
+        <SearchBar />
+        <IDW
+          webViewRef={webViewRef}
+        />
+        <Map webViewRef={webViewRef} />
+        <ForecastCards />
+      </ScrollView>
+    </SafeAreaView>
   );
 }

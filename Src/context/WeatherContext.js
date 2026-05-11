@@ -1,7 +1,5 @@
 import React, { createContext, useState } from "react";
-
 export const WeatherContext = createContext();
-
 export const WeatherProvider = ({ children }) => {
   const [data, setData] = useState(null);
   const [location, setLocation] = useState(null);

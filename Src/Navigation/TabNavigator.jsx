@@ -4,6 +4,7 @@ import HomeScreen from "../Screens/HomeScreen.jsx";
 import DistrictScreen from "../Screens/DistrictScreen.jsx";
 import ReportScreen from "../Screens/ReportScreen.jsx";
 import UserScreen from "../Screens/UserScreen.jsx";
+import CycloneScreen from "../Screens/CycloneScreen.jsx";
 
 const Tab = createBottomTabNavigator();
 
@@ -12,12 +13,14 @@ const tabIcons = {
   District: "location-outline",
   Report: "document-text-outline",
   User: "person-outline",
+  Cyclone:"bicycle-outline",
 };
 
 export default function TabNavigator({ onLogout }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        lazy: true,
         headerShown: false,
         tabBarActiveTintColor: "#0f766e",
         tabBarInactiveTintColor: "#64748b",
@@ -34,17 +37,14 @@ export default function TabNavigator({ onLogout }) {
           fontWeight: "600",
         },
         tabBarIcon: ({ color, size }) => (
-          <Ionicons
-            name={tabIcons[route.name]}
-            size={size}
-            color={color}
-          />
+          <Ionicons name={tabIcons[route.name]} size={size} color={color} />
         ),
       })}
     >
       <Tab.Screen name="Real Time" component={HomeScreen} />
       <Tab.Screen name="District" component={DistrictScreen} />
       <Tab.Screen name="Report" component={ReportScreen} />
+      <Tab.Screen name="Cyclone" component={CycloneScreen} />
       <Tab.Screen name="User">
         {(props) => <UserScreen {...props} onLogout={onLogout} />}
       </Tab.Screen>
