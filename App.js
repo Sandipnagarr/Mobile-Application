@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import SplashScreen from "./Src/Screens/SplashScreen.jsx";
@@ -70,14 +69,15 @@ export default function App() {
 }
 /**
  
-made Hazard component structure integrated it into the main screen and designed the UI
-Fetched get-ndma-hazards-list API to get hazards rendered dynamic buttons and bound the data
-Implemented default active hazard selection and added icons to hazard tabs
-Fetched get-ndma-severity-list API to get severity types
-Built a custom severity dropdown with selection handling and UI binding
-Connected get-ndma-today-disasters API  to render table (facing internal server error)
-Created context to share the circle across all components and rendered hazards based on the selected circle
+ * Developed district selection feature in the React Native application
+* Integrated `get_district_list` API to load districts dynamically based on selected state/circle
+* Created centralized API helper function for reusable POST requests
+* Added district dropdown using React Native Picker
+* Implemented district zoom and highlight functionality on OpenLayers map
+* Added Send Report button beside district selection component
+* Implemented button enable/disable functionality based on selected circle
+* Designed and developed Send Report  modal(email,district dropdown,send button )
+*Connected the Send Report button to open SendReportScreen using useNavigation()
 
-
-
+Cleaned up the related navigation/component code and did a sanity check to keep the implementation minimal and safe.
  */

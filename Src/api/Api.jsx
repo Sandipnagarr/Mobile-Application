@@ -33,5 +33,33 @@ export const fetchWeather = async (location) => {
     }
 };
 
+export const postrequest = async (endpoint, payload) => {
+    console.log(payload, endpoint)
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+    const response = await fetch(`https://mlinfomap.org/mlwapi/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+    
+      body: JSON.stringify(payload),
+    });
+
+    const res = await response.json();
+    return res;
+  } catch (error) {
+    console.log("API Error:", error);
+
+    return null;
+  }
+};
+
 
 

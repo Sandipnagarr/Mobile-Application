@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "../Screens/HomeScreen.jsx";
-import DistrictScreen from "../Screens/DistrictScreen.jsx";
 import ReportScreen from "../Screens/ReportScreen.jsx";
 import UserScreen from "../Screens/UserScreen.jsx";
 import CycloneScreen from "../Screens/CycloneScreen.jsx";
+import DistrictScreen from "../Screens/DistrictScreen.jsx";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,7 +42,7 @@ export default function TabNavigator({ onLogout }) {
       })}
     >
       <Tab.Screen name="Real Time" component={HomeScreen} />
-      <Tab.Screen name="District" component={DistrictScreen} />
+      <Tab.Screen name="District" component={DistrictScreen}/>
       <Tab.Screen name="Report" component={ReportScreen} />
       <Tab.Screen name="Cyclone" component={CycloneScreen} />
       <Tab.Screen name="User">
