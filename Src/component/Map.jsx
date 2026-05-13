@@ -855,7 +855,54 @@ function loadDistrict(circle = "All India") {
     console.log("District API ERROR", error);
   });
 }
+function zoomToDistrict(districtName) {
 
+  let matchedFeature = null;
+
+  districtSource.getFeatures().forEach((feature) => {
+
+    const district =
+      feature.get("district");
+
+    if (
+      district &&
+      district.toLowerCase() ===
+      districtName.toLowerCase()
+    ) {
+
+      matchedFeature = feature;
+    }
+  });
+
+  if (!matchedFeature) return;
+
+  // Highlight Style
+  matchedFeature.setStyle(
+    new ol.style.Style({
+
+      stroke: new ol.style.Stroke({
+        color: "#ff0000",
+        width: 3,
+      }),
+
+      fill: new ol.style.Fill({
+        color: "rgba(255,0,0,0.2)",
+      }),
+    })
+  );
+
+  // Zoom
+  const extent =
+    matchedFeature
+      .getGeometry()
+      .getExtent();
+
+  map.getView().fit(extent, {
+    duration: 1000,
+    padding: [50, 50, 50, 50],
+    maxZoom: 10,
+  });
+}
 function getWeatherMetricValue(item, valueFields) {
   for (let index = 0; index < valueFields.length; index += 1) {
     const metricValue = parseFloat(item[valueFields[index]]);
@@ -1579,6 +1626,10 @@ function handleNativeMessage(event) {
     if (WEATHER_IDW_CONFIG[message.type]) {
       toggleWeatherIDW(message.type);
     }
+  if (message.type === "ZOOM_TO_DISTRICT") {
+  zoomToDistrict(message.district);
+  return;
+}
 
   } catch (error) {
     console.log("Bridge message error", error);
@@ -1682,8 +1733,15 @@ window.onload = function () {
 }
 
 export default function Map({ webViewRef, setActiveIdwType, setIdwLoading}) {
-  const { setData, location, setLocation, setLocationName, data, setCircle } =
-    useContext(WeatherContext);
+  const {
+    setData,
+    location,
+    setLocation,
+    setLocationName,
+    data,
+    setCircle,
+    setCircleSelected,
+  } = useContext(WeatherContext);
   const [token, setToken] = useState(null);
   const [webViewSource, setWebViewSource] = useState(null);
   useEffect(() => {
@@ -1747,6 +1805,7 @@ const handleWebViewMessage = (event) => {
         setLocation(msg.coords);
         setLocationName(msg.name);
         setCircle(msg.circle);
+        setCircleSelected(true);
       }
       if (msg.type === "IDW_STATE_CHANGE") {
         setActiveIdwType(IDW_ACTIVE_BUTTONS[msg.activeType] || null);
