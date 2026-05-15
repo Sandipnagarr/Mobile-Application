@@ -91,9 +91,11 @@ export default function ForecastCards() {
       </Pressable>
 
       {showHourly && (
-        <ScrollView horizontal
+        <ScrollView
+          horizontal
           ref={scrollRef}
-          showsHorizontalScrollIndicator={false}>
+          showsHorizontalScrollIndicator={false}
+        >
           {hourlyData.map((hour, i) => {
             const hourValue = Number(hour.time.split(":")[0]);
             const isCurrent = hourValue === currentHour;
@@ -114,7 +116,7 @@ export default function ForecastCards() {
 
                 {/* RAIN % */}
                 <Text style={styles.hourRain}>
-                  🌧 {hour.chance_of_rain}% Rain probility
+                  🌧️ {hour.chance_of_rain}% Rain probility
                 </Text>
 
                 {/* RAIN MM (FIXED) */}
@@ -174,7 +176,7 @@ export default function ForecastCards() {
 
               <Text style={styles.condition}>{day.condition_text}</Text>
 
-              <Text style={styles.rain}>🌧️ {day.chance_of_rain}% chance</Text>
+              <Text style={styles.rain}> 🌧️ {day.chance_of_rain}% chance</Text>
 
               <Text style={styles.humidity}>💧 {day.humidity}%</Text>
             </View>
@@ -207,35 +209,24 @@ const createStyles = (safeTheme) =>
     },
 
     hourIcon: {
-      width: 40,
-      height: 40,
+      width: 50,
+      height: 50,
     },
-    /**
-     
-    Added a n button on the map and created a checkbox list to show all active map layers 
-    Connected the layer list with the map so users can turn layers on or off by checkbox 
-    including weather IDW layers dynamically add in the layer list with check box
-    Implemented automatic horizontal ScrollView positioning to focus the current hourly forecast card
-    Added a legend with a gradient on the map to identify the severity of the IDW affected areas.
-    make the legend label value  dynamic based on the idw button click  
-    Updated the IDW layer controls so the selected weather layer stays in sync with the map and the active button highlight updates correctly.
-    
-    */
     hourTemp: {
       fontWeight: "bold",
       color: safeTheme.secondary_text_color,
     },
 
     hourRain: {
-      fontSize: 12,
-      color: safeTheme.secondary_text_color,
+      fontSize: 10,
+      color: safeTheme.text_on_light_bg,
     },
 
     accordionTab: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingVertical: 12,
+      paddingVertical: 14,
       paddingHorizontal: 15,
       backgroundColor: safeTheme.primary_button_bg,
       marginBottom: 1,
@@ -248,7 +239,7 @@ const createStyles = (safeTheme) =>
     tabTitle: {
       flex: 1,
       textAlign: "center",
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: "600",
       color: safeTheme.text_on_dark_bg,
     },
@@ -291,18 +282,18 @@ const createStyles = (safeTheme) =>
     },
 
     minTemp: {
-      fontSize: 12,
+      fontSize: 10,
       color: safeTheme.secondary_text_color,
     },
 
     maxTemp: {
-      fontSize: 12,
+      fontSize: 10,
       color: safeTheme.secondary_text_color,
     },
 
     dayIcon: {
-      width: 40,
-      height: 40,
+      width: 50,
+      height: 50,
       alignSelf: "center",
       marginVertical: 5,
     },
@@ -310,23 +301,23 @@ const createStyles = (safeTheme) =>
     condition: {
       textAlign: "center",
       fontSize: 12,
-      color: safeTheme.secondary_text_color,
+      color: safeTheme.text_on_light_bg,
     },
 
     rain: {
-      fontSize: 12,
+      fontSize: 10,
       textAlign: "center",
-      color: safeTheme.secondary_text_color,
+      color: safeTheme.text_on_light_bg,
     },
 
     humidity: {
-      fontSize: 12,
+      fontSize: 10,
       textAlign: "center",
-      color: safeTheme.secondary_text_color,
+      color: safeTheme.text_on_light_bg,
     },
     hour_mm: {
-      color: safeTheme.secondary_text_color,
-      fontSize: 12,
+      color: safeTheme.text_on_light_bg,
+      fontSize: 10,
     },
     noData: {
       textAlign: "center",

@@ -463,7 +463,7 @@ const createStyles = (safeTheme) =>
     td: {
       width: 120,
 
-      fontSize: 12,
+      fontSize: 10,
 
       paddingVertical: 10,
       paddingHorizontal: 8,

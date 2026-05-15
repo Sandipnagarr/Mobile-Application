@@ -6,7 +6,8 @@ export const WeatherProvider = ({ children }) => {
   const [locationName, setLocationName] = useState(null); // 
   const [theme, setTheme] = useState(null); // New state for theme
   const [circle, setCircle] = useState(null);
-const [circleSelected, setCircleSelected] = useState(false);
+  const [circleSelected, setCircleSelected] = useState(false);
+
 
   return (
     <WeatherContext.Provider

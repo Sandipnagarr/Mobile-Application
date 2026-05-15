@@ -52,6 +52,14 @@ function Root() {
   );
 }
 
+/*
+1. Fixed state boundary rendering issue when resetting map view to All India.
+2. Updated layer loading logic to ensure state and district boundaries reload correctly.
+3. Designed and enhanced React Native weather KPI UI components.
+4. Integrated weather API response binding for dynamic data rendering.
+5. Performed testing and debugging for map layer visibility and UI behavior.
+*/
+
 
 // MAIN APP
 export default function App() {
@@ -67,17 +75,3 @@ export default function App() {
     </WeatherProvider>
   );
 }
-/**
- 
- * Developed district selection feature in the React Native application
-* Integrated `get_district_list` API to load districts dynamically based on selected state/circle
-* Created centralized API helper function for reusable POST requests
-* Added district dropdown using React Native Picker
-* Implemented district zoom and highlight functionality on OpenLayers map
-* Added Send Report button beside district selection component
-* Implemented button enable/disable functionality based on selected circle
-* Designed and developed Send Report  modal(email,district dropdown,send button )
-*Connected the Send Report button to open SendReportScreen using useNavigation()
-
-Cleaned up the related navigation/component code and did a sanity check to keep the implementation minimal and safe.
- */
