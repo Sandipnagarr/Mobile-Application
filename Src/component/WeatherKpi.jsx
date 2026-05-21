@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
   },
 
   kpiBubble: {
-    width: 110,
-    height: 110,
+    width: 120,
+    height: 120,
     borderRadius: 55,
     backgroundColor: "#add8e6",
     justifyContent: "space-between",
@@ -168,8 +168,8 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     textAlign: "center",
     backgroundColor: "#0d74b8",
     color: "#fff",

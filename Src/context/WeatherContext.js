@@ -7,6 +7,7 @@ export const WeatherProvider = ({ children }) => {
   const [theme, setTheme] = useState(null); // New state for theme
   const [circle, setCircle] = useState(null);
   const [circleSelected, setCircleSelected] = useState(false);
+  const [reportData, setReportData] = useState(null);
 
 
   return (
@@ -24,6 +25,8 @@ export const WeatherProvider = ({ children }) => {
         setLocationName,
         theme,
         setTheme,
+        reportData,
+        setReportData,
       }}
     >
       {children}
