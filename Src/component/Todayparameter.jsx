@@ -6,30 +6,41 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { postrequest } from "../api/Api";
 
 export default function TodayParameter() { 
-    const safeTheme = theme || defaultTheme;
-    const styles = createStyles(safeTheme);
-    const { theme,circle } = useContext(WeatherContext);
-    const [accordian, showAccordian] = useState(false);
+  const { theme,circle } = useContext(WeatherContext);
+  const safeTheme = theme || defaultTheme;
+  const styles = createStyles(safeTheme);
+   const [accordian, showAccordian] = useState(false);
+   const[disttrictdata,setdistrictdata]=useState([]);
     
 
 
-    const fetchreportdata = () => {
-        try {
-            let circlePayload = circle === "All India" ? "M&G" : circle;
-            
-            const response = postrequest("fetch_district_names_severity_wise", {
-                circle: circlePayload,
-            });
-            console.log("Report API Response:", JSON.stringify(response, null, 2));
-        }
-        catch (error) {
-            console.log("report api error",error)
-        }
-    }
-    useEffect(() => {
-        fetchreportdata
-    }, [circle])
+    const fetchreportdata = async () => {
+      try {
+        let circlePayload = circle === "All India" ? "M&G" : circle;
+        const response = await postrequest(
+          "/fetch_district_names_severity_wise",
+          {
+            circle: circlePayload,
+          },
+        );
 
+        setdistrictdata(response)
+      } catch (error) {
+        console.log("report api error", error);
+      }
+    };
+    useEffect(() => {
+      fetchreportdata();
+    }, [circle])
+  
+const weatherParams = [
+  { icon: "cloud-rain", key: "Rainfall", label: "Rainfall" },
+  { icon: "wind", key: "Wind", label: "Wind" },
+  { icon: "tint", key: "Humidity", label: "Humidity" },
+  { icon: "eye", key: "Visibility", label: "Visibility" },
+  { icon: "temperature-high", key: "Temperature_Max", label: "Temp (max)" },
+  { icon: "temperature-low", key: "Temperature_Min", label: "Temp (min)" },
+];
     return (
       <>
         <View style={styles.section}>
@@ -46,117 +57,108 @@ export default function TodayParameter() {
                 { color: accordian ? safeTheme.secondary_text_color : "#fff" },
               ]}
             >
-              Hourly Forecast
+              Today Risk of Districts for Weather Parameters
             </Text>
             <Text style={styles.arrow}>{accordian ? "▲" : "▼"}</Text>
           </Pressable>
 
           {accordian && (
-            <ScrollView horizontal showsHorizontalScrollIndicator>
-              <View style={styles.table}>
-                {/* HEADER */}
+            <View>
+              <Text style={styles.sectionTitle}>
+                Distribution of districts under varying Hazard category for
+                today {new Date().toLocaleDateString()}
+              </Text>
 
-                <View style={styles.headerRow}>
-                  <Text style={styles.parameterHeader}>Weather Parameters</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator>
+                <View style={styles.table}>
+                  {/* HEADER */}
 
-                  <Text style={[styles.header, styles.extremeHeader]}>
-                    Extreme
-                  </Text>
-
-                  <Text style={[styles.header, styles.highHeader]}>High</Text>
-
-                  <Text style={[styles.header, styles.moderateHeader]}>
-                    Moderate
-                  </Text>
-
-                  <Text style={[styles.header, styles.lowHeader]}>Low</Text>
-                </View>
-
-                {[
-                  {
-                    icon: "cloud-rain",
-                    name: "Rainfall",
-                  },
-
-                  {
-                    icon: "wind",
-                    name: "Wind",
-                  },
-
-                  {
-                    icon: "tint",
-                    name: "Humidity",
-                  },
-
-                  {
-                    icon: "eye",
-                    name: "Visibility",
-                  },
-
-                  {
-                    icon: "temperature-high",
-                    name: "Temp (max)",
-                  },
-
-                  {
-                    icon: "temperature-low",
-                    name: "Temp (min)",
-                  },
-                ].map((item, index) => (
-                  <View key={index} style={styles.row}>
-                    {/* Parameter */}
-
-                    <View style={styles.parameterCell}>
-                      <View style={styles.iconCircle}>
-                        <FontAwesome5 name={item.icon} size={14} color="#fff" />
-                      </View>
-
-                      <Text style={styles.parameterText}>{item.name}</Text>
-                    </View>
-
-                    {/* Extreme */}
-
-                    <Text style={styles.valueCell}>Nil</Text>
-
-                    {/* High */}
-
-                    <Text style={styles.valueCell}>Nashik, Pune, Satara</Text>
-
-                    {/* Moderate */}
-
-                    <Text style={styles.valueCell}>
-                      Ahmednagar, Solapur, Wardha
+                  <View style={styles.headerRow}>
+                    <Text style={styles.parameterHeader}>
+                      Weather Parameters
                     </Text>
 
-                    {/* Low */}
-
-                    <Text style={styles.valueCell}>
-                      Osmanabad, Goa, Kolhapur, Aurangabad
+                    <Text style={[styles.header, styles.extremeHeader]}>
+                      Extreme
                     </Text>
+
+                    <Text style={[styles.header, styles.highHeader]}>High</Text>
+
+                    <Text style={[styles.header, styles.moderateHeader]}>
+                      Moderate
+                    </Text>
+
+                    <Text style={[styles.header, styles.lowHeader]}>Low</Text>
                   </View>
-                ))}
 
-                {/* Bottom legend */}
+                  {weatherParams.map((item, index) => {
+                    const data = disttrictdata[item.key]?.day1;
 
-                <View style={styles.footerRow}>
-                  <Text style={styles.footerCell}>Weather Parameter</Text>
+                    return (
+                      <View key={index} style={styles.row}>
+                        <View style={styles.parameterCell}>
+                          <View style={styles.iconCircle}>
+                            <FontAwesome5
+                              name={item.icon}
+                              size={14}
+                              color="#fff"
+                            />
+                          </View>
 
-                  <Text style={[styles.footerCell, styles.tempExtreme]}>
-                    Extreme
-                  </Text>
+                          <Text style={styles.parameterText}>{item.name}</Text>
+                          <Text style={styles.parameterText}>{item.label}</Text>
 
-                  <Text style={[styles.footerCell, styles.tempHigh]}>High</Text>
+                        </View>
 
-                  <Text style={[styles.footerCell, styles.tempModerate]}>
-                    Moderate
-                  </Text>
+                        {/* Extreme */}
 
-                  <Text style={[styles.footerCell, styles.tempLow]}>
-                    Low
-                  </Text>
+                        <Text style={styles.valueCell}>
+                          {data?.extreme_districts?.join(", ") || "Nil"}
+                        </Text>
+
+                        {/* High */}
+
+                        <Text style={styles.valueCell}>
+                          {data?.high_districts?.join(", ") || "Nil"}
+                        </Text>
+
+                        {/* Moderate */}
+
+                        <Text style={styles.valueCell}>
+                          {data?.moderate_districts?.join(", ") || "Nil"}
+                        </Text>
+
+                        {/* Low */}
+
+                        <Text style={styles.valueCell}>
+                          {data?.low_districts?.join(", ") || "Nil"}
+                        </Text>
+                      </View>
+                    );
+                  })}
+
+                  {/* Bottom legend */}
+
+                  <View style={styles.footerRow}>
+                    <Text style={styles.footerCell}>Weather Parameter</Text>
+
+                    <Text style={[styles.footerCell, styles.tempExtreme]}>
+                      Extreme
+                    </Text>
+
+                    <Text style={[styles.footerCell, styles.tempHigh]}>
+                      High
+                    </Text>
+
+                    <Text style={[styles.footerCell, styles.tempModerate]}>
+                      Moderate
+                    </Text>
+
+                    <Text style={[styles.footerCell, styles.tempLow]}>Low</Text>
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
+              </ScrollView>
+            </View>
           )}
         </View>
       </>
@@ -166,7 +168,7 @@ export default function TodayParameter() {
 const createStyles = (safeTheme) =>
   StyleSheet.create({
     section: {
-      marginTop: 15,
+      marginTop: 0,
     },
     accordionTab: {
       flexDirection: "row",
@@ -180,11 +182,13 @@ const createStyles = (safeTheme) =>
 
     activeAccordionTab: {
       backgroundColor: safeTheme.accordion_active_bg,
+      
     },
     table: {
       borderWidth: 1,
       borderColor: "#0080d6",
       marginTop: 10,
+      marginBottom:10,
     },
 
     headerRow: {
@@ -200,6 +204,7 @@ const createStyles = (safeTheme) =>
       padding: 10,
       borderWidth: 1,
       borderColor: "#0080d6",
+      fontSize: 10,
       fontWeight: "700",
     },
 
@@ -209,6 +214,7 @@ const createStyles = (safeTheme) =>
       textAlign: "center",
       borderWidth: 1,
       borderColor: "#0080d6",
+      fontSize: 10,
       fontWeight: "700",
     },
 
@@ -240,6 +246,7 @@ const createStyles = (safeTheme) =>
 
     valueCell: {
       width: 220,
+      fontSize: 10,
       padding: 15,
       textAlign: "center",
       borderWidth: 1,
@@ -266,6 +273,7 @@ const createStyles = (safeTheme) =>
       borderWidth: 1,
       borderColor: "#0080d6",
       textAlign: "center",
+      fontSize: 10,
     },
 
     tempExtreme: {
@@ -282,8 +290,26 @@ const createStyles = (safeTheme) =>
       backgroundColor: "#bad3fd",
       width: 220,
     },
-      tempLow: {
-          width: 220,
-        
-      }
+    sectionTitle: {
+      fontSize: 11,
+      alignSelf: "center",
+      fontWeight: "700",
+      marginTop: 10,
+    },
+    tempLow: {
+      width: 220,
+    },
+    tabTitle: {
+      flex: 1,
+      textAlign: "center",
+      fontSize: 14,
+      fontWeight: "600",
+      color: safeTheme.text_on_dark_bg,
+    },
+    arrow: {
+      position: "absolute",
+      right: 15,
+      fontSize: 16,
+      color: safeTheme.text_on_dark_bg,
+    },
   });

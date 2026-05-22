@@ -2,8 +2,9 @@ import { ScrollView, } from "react-native";
 import { useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 // import TodayWeather from "../component/TodayWeather";
-import TempCards from "../component/TempCards";
+// import TempCards from "../component/TempCards";
 import TodayParameter from "../component/Todayparameter";
+import TodayHazard from "../component/TodayHazard";
 import WeatherKpi from "../component/WeatherKpi";
 import Map from "../component/Map";
 import WeatherBreakdown from "../component/WeatherBrekdown";
@@ -16,8 +17,10 @@ export default function ReportScreen() {
         <WeatherKpi/>
         <Map webViewRef={webViewRef} />
         <WeatherBreakdown />
-        <TempCards />
-<TodayParameter/>
+        {/* <TempCards /> */}
+        <TodayParameter />
+        <TodayHazard />
+        
       </ScrollView>
     </SafeAreaView>
   );

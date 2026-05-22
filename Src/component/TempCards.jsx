@@ -9,10 +9,19 @@ const iconRows = [
   { key: "rain", icon: "cloud-rain" },
   { key: "wind", icon: "wind" },
   { key: "humidity", icon: "tint" },
-  { key: "visibility", icon: "smog" },
+  { key: "visibility", icon: "eye" },
   { key: "tempMax", icon: "temperature-high" },
   { key: "tempMin", icon: "temperature-low" },
 ];
+/**
+ * 1. fetch the api fetch_district_names_severity_wise andbound the data with the table in the today parameter
+ * 2.create district hazard accordian and design the tabel  for that add icons(avlach,lighning.fog,cylone,flood)
+ * 3. fetcth the api get-hazard-affected-district and bound the data with tabel 
+ * 4. added margin and change color when active accorian and also chnage bgc and added headers 
+ * 5. issue in fog data checked api response not in api chnage in bakend api added fog data (by vishal)
+ * / */
+ 
+ 
 
 export default function TempCards(){
   const { circle} = useContext(WeatherContext);
@@ -48,8 +57,6 @@ const fetchTempCards = async () => {
   
       });
 
-      const data = response;
-      // console.log("severity api response", data)
       const legend = response.data;
 
       const severityData = [
@@ -242,7 +249,7 @@ const formatTempCards = (data) => {
               ["cloud-rain", "Rainfall (mm)"],
               ["wind", "Wind (kmph)"],
               ["tint", "Humidity (%)"],
-              ["smog", "Visibility(km)"],
+              ["eye", "Visibility(km)"],
               ["temperature-high", "Temp (max)"],
               ["temperature-low", "Temp (min)"],
             ].map((item, index) => (
@@ -296,7 +303,7 @@ const createStyles = (theme) =>
       elevation: 3,
     },
     title: {
-      fontSize: 15,
+      fontSize: 11,
       fontWeight: "700",
       textAlign: "center",
       marginBottom: 14,
@@ -314,8 +321,8 @@ const createStyles = (theme) =>
       alignItems: "center",
     },
     dateLabel: {
-      fontSize: 14,
-      fontWeight: "600",
+      fontSize: 10,
+      fontWeight: "700",
       color: "#333",
       marginBottom: 10,
     },
@@ -347,7 +354,7 @@ const createStyles = (theme) =>
     },
     cardHeader: {
       textAlign: "center",
-      fontSize: 12,
+      fontSize: 10,
       fontWeight: "600",
       color: "#222",
       marginBottom: 10,
@@ -415,6 +422,7 @@ const createStyles = (theme) =>
       width: 110,
       textAlign: "center",
       fontWeight: "700",
+      fontSize: 10,
       borderWidth: 0.5,
       borderColor: "#0d7cc1",
       padding: 18,
@@ -434,7 +442,7 @@ const createStyles = (theme) =>
 
     headerText: {
       fontWeight: "700",
-      fontSize: 12,
+      fontSize: 10,
     },
 
     row: {
@@ -445,6 +453,7 @@ const createStyles = (theme) =>
       width: 110,
       padding: 14,
       fontWeight: "700",
+      fontSize: 10,
       borderWidth: 1,
       borderColor: "#0d7cc1",
     },
@@ -452,14 +461,13 @@ const createStyles = (theme) =>
     cell: {
       width: 120,
       padding: 12,
-
       borderWidth: 1,
       borderColor: "#0d7cc1",
-
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
       gap: 8,
+      fontSize: 10,
     },
 
     extreme: {

@@ -8,6 +8,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
 import { defaultTheme } from "../theme";
 import { WeatherContext } from "../context/WeatherContext";
 import { postrequest } from "../api/Api";
+import TempCard  from "../component/TempCards";
 
 export default function WeatherBreakdown() {
   const { theme } = useContext(WeatherContext);
@@ -130,6 +131,8 @@ export default function WeatherBreakdown() {
               hideLegend={false}
             />
           )}
+
+          <TempCard />
         </ScrollView>
       )}
     </View>
