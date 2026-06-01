@@ -52,13 +52,17 @@ function Root() {
   );
 }
 
-/*
-1. Fixed state boundary rendering issue when resetting map view to All India.
-2. Updated layer loading logic to ensure state and district boundaries reload correctly.
-3. Designed and enhanced React Native weather KPI UI components.
-4. Integrated weather API response binding for dynamic data rendering.
-5. Performed testing and debugging for map layer visibility and UI behavior.
-*/
+/****
+ Implemented a React Native accordion component for the Weather Forecast section 
+ added useState and Pressable for expand/collapse functionality
+ Enhanced Weather Forecast UI by adding dynamic buttons improved  styling 
+ Investigated lag in map zoom when selecting a country/county boundary in the weather dashboard
+ Analyzed map selection flow and identified delay caused by repeated boundary processing 
+ Optimized selected country/province zoom behavior for faster map focus with smoother response
+ Added protection for rapid repeated selections so only the latest map action completes
+ resolve the fullscreen issue idw not cretaed and added auto zoom  fix it,deployed (with ravi sir )
+ 
+ * */
 
 
 // MAIN APP
