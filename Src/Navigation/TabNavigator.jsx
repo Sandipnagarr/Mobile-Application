@@ -44,7 +44,7 @@ export default function TabNavigator({ onLogout }) {
       <Tab.Screen name="Real Time" component={HomeScreen} />
       <Tab.Screen name="District" component={DistrictScreen}/>
       <Tab.Screen name="Report" component={ReportScreen} />
-      <Tab.Screen name="Cyclone" component={CycloneScreen} />
+      {/* <Tab.Screen name="Cyclone" component={CycloneScreen} /> */}
       <Tab.Screen name="User">
         {(props) => <UserScreen {...props} onLogout={onLogout} />}
       </Tab.Screen>

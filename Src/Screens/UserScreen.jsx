@@ -1,52 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export default function UserScreen({ onLogout }) {
-
-
-// const handleLogout = async (onLogout) => {
-//   try {
-//      const token = await AsyncStorage.getItem("token");
-//     const logId = await AsyncStorage.getItem("logId");
-
-//     const payload = {
-//       logId: logId ? JSON.parse(logId) : null,
-//     };
-
-//     const response = await fetch("https://mlinfomap.org/mlwapi/user_logout", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${token}`,
-//       },
-//       body: JSON.stringify(payload),
-//     });
-
-//     const data = await response.json();
-
-//     console.log("LOGOUT RESPONSE:", JSON.stringify(data, null, 2));
-
-//     if (data?.status === "success") {
-//       //  clear storage
-//       await AsyncStorage.multiRemove([
-//         "token",
-//         "user",
-//         "circleClicked",
-//         "logId",
-//       ]);
-
-//       Alert.alert("Logout", "Successfully logged out");
-
-//       //  navigate / update state
-//       onLogout?.();
-//     } else {
-//       Alert.alert("Logout failed", data?.msg || "Try again");
-//     }
-//   } catch (error) {
-//     console.log("Logout error:", error);
-//     Alert.alert("Error", "Something went wrong");
-//   }
-// };
-  
+export default function UserScreen({ onLogout }) {  
   const handleLogout = async (onLogout) => {
     try {
       const token = await AsyncStorage.getItem("token");

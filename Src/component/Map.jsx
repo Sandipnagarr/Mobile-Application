@@ -147,22 +147,15 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .label-gradient {
   display: flex;
-
   justify-content: space-between;
-
   font-size: 12px;
-
   font-weight: bold;
-
   margin-bottom: 6px;
 }
 
 .color-gradient {
-
   height: 14px;
-
   border-radius: 6px;
-
   background: linear-gradient(
     to left,
     blue,
@@ -230,6 +223,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 const TOKEN = "${token}";
 const DEFAULT_PADDING = [20, 20, 20, 20];
 
+
 let map;
 // -------------------popup-----
 let popupContainer;
@@ -251,6 +245,8 @@ const vectorSourceRain = new ol.source.Vector();
 const vectorSourceWind = new ol.source.Vector();
 const vectorSourceHumidity = new ol.source.Vector();
 const vectorSourceFog = new ol.source.Vector();
+
+
 const WEATHER_IDW_CONFIG = {
   RAIN_IDW: {
     label: "Rainfall",
@@ -278,6 +274,8 @@ const WEATHER_IDW_CONFIG = {
     valueFields: ["temp_c", "temperature"]
   }
 };
+
+
 let activeWeatherIDWType = null;
 let lastWeatherIDWType = null;
 let processedWeatherGrid = null;
@@ -361,12 +359,9 @@ const stateLayer = new ol.layer.Vector({
       // label style
       new ol.style.Style({
         geometry: new ol.geom.Point(center),
-
         text: new ol.style.Text({
           text: stateName,
-
-          font: "bold 14px sans-serif",
-
+          font: "bold 12px sans-serif",
           fill: new ol.style.Fill({
             color: "#000"
           }),
@@ -383,18 +378,6 @@ const stateLayer = new ol.layer.Vector({
   }
 });
 
-// const districtLayer = new ol.layer.Vector({
-//   source: districtSource,
-//   style: new ol.style.Style({
-//     stroke: new ol.style.Stroke({
-//       color: "rgba(16, 98, 59, 0.55)",
-//       width: 1
-//     }),
-//     fill: new ol.style.Fill({
-//       color: "rgba(16, 98, 59, 0.02)"
-//     })
-//   })
-// });
 const districtLayer = new ol.layer.Vector({
   source: districtSource,
 
@@ -743,8 +726,7 @@ function loadCircles() {
       option.value = optionData.label;
       option.text = optionData.full_name;
       option.setAttribute("data-coords", optionData.value || "");
-      option.setAttribute(
-        "data-location-name",
+      option.setAttribute("data-location-name",
         optionData.location_name || optionData.full_name || optionData.label
       );
       select.appendChild(option);
@@ -1597,6 +1579,7 @@ function onStateChange() {
 
   if (selected === "All India") {
     loadDistrict("All India");
+    loadState("All India")
     fitSource(indiaSource);
     return;
   }
@@ -1636,33 +1619,29 @@ function handleNativeMessage(event) {
   }
 }
 
+indiaLayer.setZIndex(20);
 window.addEventListener("message", handleNativeMessage);
 document.addEventListener("message", handleNativeMessage);
-
 window.onload = function () {
   map = new ol.Map({
     target: "map",
     layers: [
       new ol.layer.Tile({
         source: new ol.source.OSM()
-      }),
-      idwLayer,
+        }),
+        idwLayer,
+        indiaLayer,
+        districtLayer,
+        stateLayer,
+        searchLayer
+        ],
+        
+        view: new ol.View({
+          center: ol.proj.fromLonLat([77.2090, 28.6139]),
+          zoom: 5
+          })
+          });
 
-
-
-
-
-      
-      indiaLayer,
-      districtLayer,
-      stateLayer,
-      searchLayer
-    ],
-    view: new ol.View({
-      center: ol.proj.fromLonLat([77.2090, 28.6139]),
-      zoom: 5
-    })
-  });
   layerToggleButton = document.getElementById("layerToggleButton");
   layersPanel = document.getElementById("layersPanel");
   layersList = document.getElementById("layersList");
@@ -1742,6 +1721,8 @@ export default function Map({ webViewRef, setActiveIdwType, setIdwLoading}) {
     setCircle,
     setCircleSelected,
   } = useContext(WeatherContext);
+
+  
   const [token, setToken] = useState(null);
   const [webViewSource, setWebViewSource] = useState(null);
   useEffect(() => {
