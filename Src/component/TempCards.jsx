@@ -13,15 +13,6 @@ const iconRows = [
   { key: "tempMax", icon: "temperature-high" },
   { key: "tempMin", icon: "temperature-low" },
 ];
-/**
- * 1. fetch the api fetch_district_names_severity_wise andbound the data with the table in the today parameter
- * 2.create district hazard accordian and design the tabel  for that add icons(avlach,lighning.fog,cylone,flood)
- * 3. fetcth the api get-hazard-affected-district and bound the data with tabel 
- * 4. added margin and change color when active accorian and also chnage bgc and added headers 
- * 5. issue in fog data checked api response not in api chnage in bakend api added fog data (by vishal)
- * / */
- 
- 
 
 export default function TempCards(){
   const { circle} = useContext(WeatherContext);

@@ -59,7 +59,7 @@ const weatherParams = [
             >
               Today Risk of Districts for Weather Parameters
             </Text>
-            <Text style={styles.arrow}>{accordian ? "▲" : "▼"}</Text>
+            <Text>{accordian ? "▲" : "▼"}</Text>
           </Pressable>
 
           {accordian && (
